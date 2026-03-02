@@ -14,6 +14,101 @@ export type Database = {
   }
   public: {
     Tables: {
+      disputes: {
+        Row: {
+          amount: number
+          consumer_id: string
+          created_at: string
+          description: string | null
+          dispute_number: string
+          farmer_id: string
+          id: string
+          order_id: string
+          resolution: string | null
+          status: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          consumer_id: string
+          created_at?: string
+          description?: string | null
+          dispute_number?: string
+          farmer_id: string
+          id?: string
+          order_id: string
+          resolution?: string | null
+          status?: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          consumer_id?: string
+          created_at?: string
+          description?: string | null
+          dispute_number?: string
+          farmer_id?: string
+          id?: string
+          order_id?: string
+          resolution?: string | null
+          status?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "disputes_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          commission_amount: number
+          consumer_id: string
+          created_at: string
+          delivery_address: string | null
+          farmer_id: string
+          id: string
+          items: Json
+          order_number: string
+          status: string
+          total_amount: number
+          updated_at: string
+        }
+        Insert: {
+          commission_amount?: number
+          consumer_id: string
+          created_at?: string
+          delivery_address?: string | null
+          farmer_id: string
+          id?: string
+          items?: Json
+          order_number?: string
+          status?: string
+          total_amount?: number
+          updated_at?: string
+        }
+        Update: {
+          commission_amount?: number
+          consumer_id?: string
+          created_at?: string
+          delivery_address?: string | null
+          farmer_id?: string
+          id?: string
+          items?: Json
+          order_number?: string
+          status?: string
+          total_amount?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
