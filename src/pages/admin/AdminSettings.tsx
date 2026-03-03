@@ -1,14 +1,19 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Settings, Bell, Shield, IndianRupee, Globe } from 'lucide-react';
+import { Bell, Shield, IndianRupee, Globe, Loader2 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+
+const BOOLEAN_KEYS = ['emailNotifications', 'smsNotifications', 'autoApproveOrders', 'maintenanceMode'];
 
 const AdminSettings = () => {
   const { toast } = useToast();
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [settings, setSettings] = useState({
     platformName: 'FarmLink Connect',
     commissionRate: '10',
@@ -20,13 +25,72 @@ const AdminSettings = () => {
     maxDeliveryDays: '7',
   });
 
-  const handleSave = () => {
-    toast({ title: 'Settings saved', description: 'Platform settings have been updated successfully.' });
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('platform_settings')
+          .select('key, value');
+
+        if (error) throw error;
+
+        if (data && data.length > 0) {
+          const mapped: any = {};
+          data.forEach((row: any) => {
+            if (BOOLEAN_KEYS.includes(row.key)) {
+              mapped[row.key] = row.value === 'true';
+            } else {
+              mapped[row.key] = row.value;
+            }
+          });
+          setSettings(prev => ({ ...prev, ...mapped }));
+        }
+      } catch (err) {
+        console.error('Error fetching settings:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchSettings();
+  }, []);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const entries = Object.entries(settings).map(([key, value]) => ({
+        key,
+        value: String(value),
+        updated_at: new Date().toISOString(),
+      }));
+
+      for (const entry of entries) {
+        const { error } = await supabase
+          .from('platform_settings')
+          .update({ value: entry.value, updated_at: entry.updated_at })
+          .eq('key', entry.key);
+        if (error) throw error;
+      }
+
+      toast({ title: 'Settings saved', description: 'Platform settings have been updated successfully.' });
+    } catch (err: any) {
+      console.error('Error saving settings:', err);
+      toast({ title: 'Error', description: err.message || 'Failed to save settings.', variant: 'destructive' });
+    } finally {
+      setSaving(false);
+    }
   };
 
   const toggleSetting = (key: keyof typeof settings) => {
     setSettings(prev => ({ ...prev, [key]: !prev[key] }));
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="p-4 md:p-8 max-w-3xl mx-auto space-y-8">
@@ -113,7 +177,9 @@ const AdminSettings = () => {
         </div>
       </div>
 
-      <Button onClick={handleSave} size="lg" className="w-full h-12 font-semibold">Save Settings</Button>
+      <Button onClick={handleSave} disabled={saving} size="lg" className="w-full h-12 font-semibold">
+        {saving ? <><Loader2 className="h-4 w-4 animate-spin mr-2" /> Saving...</> : 'Save Settings'}
+      </Button>
     </div>
   );
 };
