@@ -20,34 +20,49 @@ serve(async (req) => {
 
     const today = new Date().toISOString().split('T')[0];
 
-    const prompt = `You are an agricultural market analyst. Provide realistic current market pricing data for these crops in ${region} as of ${today}.
+    const prompt = `You are a senior agricultural market analyst with deep expertise in global commodity markets. Provide comprehensive, realistic market pricing data for these crops in ${region} as of ${today}.
 
-For each crop: ${crops.join(', ')}
+Crops to analyze: ${crops.join(', ')}
 
-Return a JSON object with this exact structure (no markdown, no explanation, just JSON):
+IMPORTANT — Your analysis MUST incorporate ALL of the following factors:
+
+1. **Global Market Trends**: International commodity prices, import/export dynamics, trade policies, tariffs, sanctions, and currency fluctuations (INR vs USD) that affect crop prices.
+
+2. **Geopolitical & Economic Situations**: Ongoing conflicts, supply chain disruptions, fuel/fertilizer cost changes, government subsidies (MSP — Minimum Support Price), procurement policies, and inflation.
+
+3. **Market Demand**: Festival/seasonal demand spikes (e.g., Navratri, Diwali, Ramadan), urban vs rural consumption patterns, restaurant/food industry demand, and export demand from international buyers.
+
+4. **Weather & Climate Conditions**: Current monsoon status, El Niño/La Niña effects, drought/flood risks, unseasonal rainfall, heatwaves, and their direct impact on yield and supply for each crop. Consider both the current season and upcoming weather forecasts.
+
+5. **Supply Chain Factors**: Cold storage availability, transportation costs, wastage rates, mandi (wholesale market) dynamics, and middlemen impact on pricing.
+
+6. **Historical Patterns**: Year-over-year price trends, cyclical patterns, and any anomalies in the current season.
+
+Return a JSON object with this exact structure (no markdown, no explanation, just pure JSON):
 {
   "priceHistory": [
-    { "month": "Jan", ${crops.map(c => `"${c.toLowerCase()}": <price_inr_per_kg>`).join(', ')} },
-    ... (6 months of historical data)
+    { "month": "Oct", ${crops.map(c => `"${c.toLowerCase()}": <price_inr_per_kg>`).join(', ')} },
+    ... (6 months of historical data leading up to current month)
   ],
   "predictions": [
     {
       "product": "<crop_name>",
       "currentPrice": <current_price_inr>,
       "predictedPrice": <predicted_price_next_week>,
-      "trend": "up" or "down",
+      "trend": "up" or "down" or "stable",
       "confidence": <0.0 to 1.0>,
-      "reason": "<brief reason for trend>"
+      "reason": "<detailed reason incorporating weather, demand, global factors>"
     }
   ],
   "marketInsights": [
-    "<insight about current market conditions>",
-    "<insight about seasonal patterns>",
-    "<insight about demand trends>"
+    "<insight about global market impact on local prices>",
+    "<insight about weather/climate effects on upcoming supply>",
+    "<insight about demand trends and seasonal patterns>",
+    "<insight about government policy or trade impact>"
   ]
 }
 
-Use realistic Indian market prices in INR per kg. Base predictions on seasonal patterns, monsoon effects, festival demand, and typical supply chain factors.`;
+Use realistic Indian market prices in INR per kg. Every prediction reason should reference at least 2 of the factors listed above.`;
 
     const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
