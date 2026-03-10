@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { IndianRupee, ShoppingCart, TrendingUp, Package, CloudSun, ArrowUpRight, Star, Truck } from 'lucide-react';
 import { StatCard, SectionHeader } from '@/components/StatCard';
 import { useApp } from '@/contexts/AppContext';
+import { useNavigate } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 const earningsData = [
