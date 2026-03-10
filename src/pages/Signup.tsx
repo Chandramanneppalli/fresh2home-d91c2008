@@ -50,9 +50,10 @@ const Signup = () => {
 
     toast({
       title: 'Account created!',
-      description: 'Please check your email for a verification code.',
+      description: 'Welcome to FarmLink!',
     });
-    navigate('/verify-otp', { state: { email } });
+    const dest = selectedRole === 'farmer' ? '/farmer' : selectedRole === 'admin' ? '/admin' : '/consumer';
+    navigate(dest, { replace: true });
   };
 
   return (
