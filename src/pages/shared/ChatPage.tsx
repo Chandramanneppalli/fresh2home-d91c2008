@@ -1,121 +1,267 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Send, Phone, MoreVertical } from 'lucide-react';
+import { Send, Phone, MoreVertical, ArrowLeft, MessageSquarePlus, Search, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { useConversations, useMessages, findOrCreateConversation, type Conversation } from '@/hooks/useChat';
+import { supabase } from '@/integrations/supabase/client';
+import { useApp } from '@/contexts/AppContext';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { toast } from 'sonner';
 
-const contacts = [
-  { id: 1, name: 'Priya Sharma', lastMsg: 'When will the tomatoes be ready?', time: '2m ago', unread: 2, avatar: 'P' },
-  { id: 2, name: 'Amit Kumar', lastMsg: 'Order received. Thank you!', time: '1h ago', unread: 0, avatar: 'A' },
-  { id: 3, name: 'Neha Reddy', lastMsg: 'Can you deliver to Sector 15?', time: '3h ago', unread: 1, avatar: 'N' },
-  { id: 4, name: 'Vikram Singh', lastMsg: 'Interested in bulk rice order', time: '1d ago', unread: 0, avatar: 'V' },
-];
+const formatTime = (dateStr: string) => {
+  const d = new Date(dateStr);
+  const now = new Date();
+  const diff = now.getTime() - d.getTime();
+  if (diff < 60000) return 'Just now';
+  if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
+  if (diff < 86400000) return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  return d.toLocaleDateString([], { month: 'short', day: 'numeric' });
+};
 
-const messages = [
-  { id: 1, sender: 'them', text: 'Hi! Are the organic tomatoes still available?', time: '10:30 AM' },
-  { id: 2, sender: 'me', text: 'Yes! We have 50kg fresh stock. Grade A+ quality.', time: '10:32 AM' },
-  { id: 3, sender: 'them', text: 'Great! What\'s the price per kg?', time: '10:33 AM' },
-  { id: 4, sender: 'me', text: '₹45/kg. AI recommends ₹48 based on current market trends.', time: '10:34 AM' },
-  { id: 5, sender: 'them', text: 'I\'ll take 5kg. When can you deliver?', time: '10:35 AM' },
-  { id: 6, sender: 'me', text: 'Tomorrow morning by 10 AM. I\'ll create the order for you!', time: '10:36 AM' },
-  { id: 7, sender: 'them', text: 'When will the tomatoes be ready?', time: '10:38 AM' },
-];
+const NewChatDialog = ({ userId, onCreated }: { userId: string; onCreated: (convId: string) => void }) => {
+  const [search, setSearch] = useState('');
+  const [results, setResults] = useState<{ user_id: string; full_name: string }[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [open, setOpen] = useState(false);
 
-const ChatPage = () => {
-  const [selectedContact, setSelectedContact] = useState(contacts[0]);
-  const [newMessage, setNewMessage] = useState('');
+  const handleSearch = async (q: string) => {
+    setSearch(q);
+    if (q.length < 2) { setResults([]); return; }
+    setSearching(true);
+    const { data } = await supabase
+      .from('profiles')
+      .select('user_id, full_name')
+      .ilike('full_name', `%${q}%`)
+      .neq('user_id', userId)
+      .limit(10);
+    setResults(data || []);
+    setSearching(false);
+  };
+
+  const startChat = async (otherId: string) => {
+    const convId = await findOrCreateConversation(userId, otherId);
+    setOpen(false);
+    setSearch('');
+    setResults([]);
+    onCreated(convId);
+  };
 
   return (
-    <div className="flex h-[calc(100vh-60px)] md:h-screen">
-      {/* Contacts List */}
-      <div className="w-full md:w-80 border-r border-border bg-card flex flex-col">
-        <div className="p-4 border-b border-border">
-          <h2 className="text-lg font-bold font-display text-card-foreground">Messages</h2>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="ghost" size="icon"><MessageSquarePlus className="h-5 w-5" /></Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader><DialogTitle>New Conversation</DialogTitle></DialogHeader>
+        <div className="space-y-3">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input value={search} onChange={(e) => handleSearch(e.target.value)} placeholder="Search by name..." className="pl-9" />
+          </div>
+          {searching && <div className="flex justify-center py-4"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>}
+          <div className="max-h-60 overflow-auto space-y-1">
+            {results.map(u => (
+              <button key={u.user_id} onClick={() => startChat(u.user_id)} className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted transition-colors text-left">
+                <div className="h-9 w-9 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-sm">
+                  {u.full_name.charAt(0).toUpperCase()}
+                </div>
+                <span className="text-sm font-medium text-foreground">{u.full_name}</span>
+              </button>
+            ))}
+            {search.length >= 2 && !searching && results.length === 0 && (
+              <p className="text-center text-sm text-muted-foreground py-4">No users found</p>
+            )}
+          </div>
         </div>
-        <div className="flex-1 overflow-auto">
-          {contacts.map((contact) => (
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+const ChatPage = () => {
+  const [user, setUser] = useState<{ id: string } | null>(null);
+  const [selectedConvo, setSelectedConvo] = useState<Conversation | null>(null);
+  const [newMessage, setNewMessage] = useState('');
+  const [showMobileChat, setShowMobileChat] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setUser(data.user ? { id: data.user.id } : null));
+  }, []);
+
+  const { conversations, loading, refetch } = useConversations(user?.id);
+  const { messages, sendMessage } = useMessages(selectedConvo?.id, user?.id);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  // Refetch conversations when messages change (for last message updates)
+  useEffect(() => {
+    if (messages.length > 0) {
+      const timeout = setTimeout(refetch, 500);
+      return () => clearTimeout(timeout);
+    }
+  }, [messages.length, refetch]);
+
+  const handleSend = async () => {
+    if (!newMessage.trim()) return;
+    await sendMessage(newMessage);
+    setNewMessage('');
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
+
+  const selectConversation = (convo: Conversation) => {
+    setSelectedConvo(convo);
+    setShowMobileChat(true);
+  };
+
+  const handleNewChat = (convId: string) => {
+    refetch().then(() => {
+      const convo = conversations.find(c => c.id === convId);
+      if (convo) selectConversation(convo);
+    });
+    // Also try after refetch completes
+    setTimeout(() => {
+      refetch();
+    }, 300);
+  };
+
+  if (!user) {
+    return <div className="flex justify-center items-center h-full"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>;
+  }
+
+  const ContactsList = () => (
+    <div className={`w-full md:w-80 border-r border-border bg-card flex flex-col ${showMobileChat ? 'hidden md:flex' : 'flex'}`}>
+      <div className="p-4 border-b border-border flex items-center justify-between">
+        <h2 className="text-lg font-bold font-display text-card-foreground">Messages</h2>
+        <NewChatDialog userId={user.id} onCreated={handleNewChat} />
+      </div>
+      <div className="flex-1 overflow-auto">
+        {loading ? (
+          <div className="flex justify-center py-8"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
+        ) : conversations.length === 0 ? (
+          <div className="text-center py-12 px-4">
+            <p className="text-muted-foreground text-sm">No conversations yet</p>
+            <p className="text-muted-foreground text-xs mt-1">Start a new chat using the + button above</p>
+          </div>
+        ) : (
+          conversations.map((convo) => (
             <button
-              key={contact.id}
-              onClick={() => setSelectedContact(contact)}
+              key={convo.id}
+              onClick={() => selectConversation(convo)}
               className={`w-full flex items-center gap-3 px-4 py-3 border-b border-border transition-colors text-left ${
-                selectedContact.id === contact.id ? 'bg-accent' : 'hover:bg-muted/50'
+                selectedConvo?.id === convo.id ? 'bg-accent' : 'hover:bg-muted/50'
               }`}
             >
               <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-sm shrink-0">
-                {contact.avatar}
+                {convo.otherUser?.full_name?.charAt(0).toUpperCase() || '?'}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex justify-between items-center">
-                  <p className="font-medium text-sm text-card-foreground truncate">{contact.name}</p>
-                  <span className="text-xs text-muted-foreground shrink-0">{contact.time}</span>
+                  <p className="font-medium text-sm text-card-foreground truncate">{convo.otherUser?.full_name || 'Unknown'}</p>
+                  {convo.lastMessage && (
+                    <span className="text-xs text-muted-foreground shrink-0">{formatTime(convo.lastMessage.created_at)}</span>
+                  )}
                 </div>
-                <p className="text-xs text-muted-foreground truncate mt-0.5">{contact.lastMsg}</p>
+                <p className="text-xs text-muted-foreground truncate mt-0.5">{convo.lastMessage?.content || 'No messages yet'}</p>
               </div>
-              {contact.unread > 0 && (
+              {convo.unreadCount > 0 && (
                 <span className="h-5 w-5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center shrink-0">
-                  {contact.unread}
+                  {convo.unreadCount}
                 </span>
               )}
             </button>
-          ))}
-        </div>
+          ))
+        )}
       </div>
+    </div>
+  );
 
-      {/* Chat Window */}
-      <div className="hidden md:flex flex-1 flex-col bg-background">
-        {/* Chat Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-card">
-          <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-sm">
-              {selectedContact.avatar}
-            </div>
-            <div>
-              <p className="font-medium text-sm text-card-foreground">{selectedContact.name}</p>
-              <p className="text-xs text-farm-success">Online</p>
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="ghost" size="icon"><Phone className="h-4 w-4" /></Button>
-            <Button variant="ghost" size="icon"><MoreVertical className="h-4 w-4" /></Button>
-          </div>
-        </div>
-
-        {/* Messages */}
-        <div className="flex-1 overflow-auto p-4 space-y-3">
-          {messages.map((msg) => (
-            <motion.div
-              key={msg.id}
-              initial={{ opacity: 0, y: 5 }}
-              animate={{ opacity: 1, y: 0 }}
-              className={`flex ${msg.sender === 'me' ? 'justify-end' : 'justify-start'}`}
-            >
-              <div className={`max-w-[70%] rounded-2xl px-4 py-2.5 ${
-                msg.sender === 'me'
-                  ? 'bg-primary text-primary-foreground rounded-br-md'
-                  : 'bg-card text-card-foreground border border-border rounded-bl-md'
-              }`}>
-                <p className="text-sm">{msg.text}</p>
-                <p className={`text-[10px] mt-1 ${msg.sender === 'me' ? 'text-primary-foreground/60' : 'text-muted-foreground'}`}>{msg.time}</p>
+  const ChatWindow = () => (
+    <div className={`flex-1 flex-col bg-background ${showMobileChat ? 'flex' : 'hidden md:flex'}`}>
+      {selectedConvo ? (
+        <>
+          <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-card">
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setShowMobileChat(false)}>
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <div className="h-9 w-9 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-sm">
+                {selectedConvo.otherUser?.full_name?.charAt(0).toUpperCase() || '?'}
               </div>
-            </motion.div>
-          ))}
-        </div>
+              <div>
+                <p className="font-medium text-sm text-card-foreground">{selectedConvo.otherUser?.full_name || 'Unknown'}</p>
+              </div>
+            </div>
+          </div>
 
-        {/* Input */}
-        <div className="p-4 border-t border-border bg-card">
-          <div className="flex gap-2">
-            <Input
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              placeholder="Type a message..."
-              className="flex-1 h-11"
-            />
-            <Button size="icon" className="h-11 w-11 shrink-0">
-              <Send className="h-4 w-4" />
-            </Button>
+          <div className="flex-1 overflow-auto p-4 space-y-3">
+            {messages.length === 0 ? (
+              <div className="flex items-center justify-center h-full">
+                <p className="text-muted-foreground text-sm">Send a message to start the conversation</p>
+              </div>
+            ) : (
+              messages.map((msg) => (
+                <motion.div
+                  key={msg.id}
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className={`flex ${msg.sender_id === user.id ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div className={`max-w-[70%] rounded-2xl px-4 py-2.5 ${
+                    msg.sender_id === user.id
+                      ? 'bg-primary text-primary-foreground rounded-br-md'
+                      : 'bg-card text-card-foreground border border-border rounded-bl-md'
+                  }`}>
+                    <p className="text-sm">{msg.content}</p>
+                    <p className={`text-[10px] mt-1 ${msg.sender_id === user.id ? 'text-primary-foreground/60' : 'text-muted-foreground'}`}>
+                      {formatTime(msg.created_at)}
+                    </p>
+                  </div>
+                </motion.div>
+              ))
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+
+          <div className="p-4 border-t border-border bg-card">
+            <div className="flex gap-2">
+              <Input
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="Type a message..."
+                className="flex-1 h-11"
+              />
+              <Button size="icon" className="h-11 w-11 shrink-0" onClick={handleSend} disabled={!newMessage.trim()}>
+                <Send className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </>
+      ) : (
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <MessageSquarePlus className="h-12 w-12 text-muted-foreground/40 mx-auto mb-3" />
+            <p className="text-muted-foreground">Select a conversation or start a new one</p>
           </div>
         </div>
-      </div>
+      )}
+    </div>
+  );
+
+  return (
+    <div className="flex h-[calc(100vh-60px)] md:h-screen">
+      <ContactsList />
+      <ChatWindow />
     </div>
   );
 };
