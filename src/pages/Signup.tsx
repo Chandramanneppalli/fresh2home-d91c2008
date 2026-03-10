@@ -52,7 +52,7 @@ const Signup = () => {
       title: 'Account created!',
       description: 'Welcome to FarmLink!',
     });
-    const dest = selectedRole === 'farmer' ? '/farmer' : selectedRole === 'admin' ? '/admin' : '/consumer';
+    const dest = selectedRole === 'farmer' ? '/farmer' : '/consumer';
     navigate(dest, { replace: true });
   };
 
