@@ -91,7 +91,7 @@ const FarmerDashboard = () => {
       {/* Recent Orders */}
       <div className="rounded-xl border border-border bg-card shadow-card overflow-hidden">
         <div className="p-4">
-          <SectionHeader title="Recent Orders" action={<button className="text-sm text-primary font-medium flex items-center gap-1 hover:underline">View All <ArrowUpRight className="h-3 w-3" /></button>} />
+          <SectionHeader title="Recent Orders" action={<button onClick={() => navigate('/farmer/orders')} className="text-sm text-primary font-medium flex items-center gap-1 hover:underline">View All <ArrowUpRight className="h-3 w-3" /></button>} />
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
