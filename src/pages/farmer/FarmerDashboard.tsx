@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { IndianRupee, ShoppingCart, TrendingUp, Package, CloudSun, ArrowUpRight, Star, Truck } from 'lucide-react';
 import { StatCard, SectionHeader } from '@/components/StatCard';
 import { useApp } from '@/contexts/AppContext';
+import { useNavigate } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 const earningsData = [
@@ -28,6 +29,7 @@ const statusColors: Record<string, string> = {
 
 const FarmerDashboard = () => {
   const { userName } = useApp();
+  const navigate = useNavigate();
 
   return (
     <div className="p-4 md:p-8 max-w-6xl mx-auto space-y-8">
@@ -89,7 +91,7 @@ const FarmerDashboard = () => {
       {/* Recent Orders */}
       <div className="rounded-xl border border-border bg-card shadow-card overflow-hidden">
         <div className="p-4">
-          <SectionHeader title="Recent Orders" action={<button className="text-sm text-primary font-medium flex items-center gap-1 hover:underline">View All <ArrowUpRight className="h-3 w-3" /></button>} />
+          <SectionHeader title="Recent Orders" action={<button onClick={() => navigate('/farmer/orders')} className="text-sm text-primary font-medium flex items-center gap-1 hover:underline">View All <ArrowUpRight className="h-3 w-3" /></button>} />
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
