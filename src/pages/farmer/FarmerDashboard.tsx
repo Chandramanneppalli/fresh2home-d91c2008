@@ -29,6 +29,7 @@ const statusColors: Record<string, string> = {
 
 const FarmerDashboard = () => {
   const { userName } = useApp();
+  const navigate = useNavigate();
 
   return (
     <div className="p-4 md:p-8 max-w-6xl mx-auto space-y-8">
