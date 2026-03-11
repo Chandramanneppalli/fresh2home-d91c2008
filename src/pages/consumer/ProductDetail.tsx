@@ -1,8 +1,9 @@
 import { motion } from 'framer-motion';
-import { ArrowLeft, Star, MapPin, Leaf, Shield, Clock, Truck, MessageCircle, ShoppingCart, QrCode } from 'lucide-react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { ArrowLeft, Star, MapPin, Leaf, Shield, MessageCircle, ShoppingCart, QrCode } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { toast } from 'sonner';
 import freshProduce from '@/assets/fresh-produce.jpg';
 
 const trackingSteps = [
@@ -15,6 +16,10 @@ const trackingSteps = [
 
 const ProductDetail = () => {
   const navigate = useNavigate();
+
+  const handleAddToCart = () => {
+    toast.success('Organic Tomatoes added to cart!');
+  };
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -52,7 +57,7 @@ const ProductDetail = () => {
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => navigate('/consumer/chat')} className="gap-1"><MessageCircle className="h-4 w-4" /> Chat</Button>
-            <Button className="gap-1"><ShoppingCart className="h-4 w-4" /> Add to Cart</Button>
+            <Button className="gap-1" onClick={handleAddToCart}><ShoppingCart className="h-4 w-4" /> Add to Cart</Button>
           </div>
         </div>
 
@@ -60,7 +65,7 @@ const ProductDetail = () => {
         <div className="rounded-xl border border-border bg-card p-4 shadow-card">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-bold font-display text-card-foreground">Product Journey</h2>
-            <Badge variant="outline" className="gap-1"><QrCode className="h-3 w-3" /> LOT-TOM-2024-087</Badge>
+            <Badge variant="outline" className="gap-1 cursor-pointer" onClick={() => navigate('/trace/LOT-TOM-2024-087')}><QrCode className="h-3 w-3" /> LOT-TOM-2024-087</Badge>
           </div>
           <div className="space-y-0">
             {trackingSteps.map((step, i) => (

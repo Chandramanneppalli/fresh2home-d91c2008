@@ -1,21 +1,23 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Search, MapPin, Star, Filter, Leaf, TrendingUp, ShoppingBag } from 'lucide-react';
+import { Search, MapPin, Star, Filter, Leaf, ShoppingCart } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '@/contexts/AppContext';
+import { toast } from 'sonner';
 import freshProduce from '@/assets/fresh-produce.jpg';
 
 const categories = ['All', 'Vegetables', 'Fruits', 'Grains', 'Dairy', 'Organic'];
 
 const products = [
-  { id: 1, name: 'Organic Tomatoes', farmer: 'Rajesh Kumar', farm: 'Green Valley Farm', price: 45, unit: 'kg', rating: 4.8, reviews: 124, grade: 'A+', distance: '3.2 km', organic: true },
-  { id: 2, name: 'Basmati Rice', farmer: 'Sunita Devi', farm: 'Golden Fields', price: 85, unit: 'kg', rating: 4.9, reviews: 89, grade: 'A', distance: '5.1 km', organic: false },
-  { id: 3, name: 'Fresh Spinach', farmer: 'Rajesh Kumar', farm: 'Green Valley Farm', price: 30, unit: 'bunch', rating: 4.7, reviews: 67, grade: 'A+', distance: '3.2 km', organic: true },
-  { id: 4, name: 'Alphonso Mangoes', farmer: 'Vikram Patil', farm: 'Mango Paradise', price: 250, unit: 'dozen', rating: 5.0, reviews: 203, grade: 'A', distance: '12 km', organic: true },
-  { id: 5, name: 'Potatoes', farmer: 'Anand Singh', farm: 'Plains Harvest', price: 25, unit: 'kg', rating: 4.5, reviews: 45, grade: 'A', distance: '8.5 km', organic: false },
-  { id: 6, name: 'Green Chilies', farmer: 'Lata Kumari', farm: 'Spice Gardens', price: 60, unit: 'kg', rating: 4.6, reviews: 34, grade: 'B+', distance: '6.3 km', organic: false },
+  { id: 1, name: 'Organic Tomatoes', farmer: 'Rajesh Kumar', farm: 'Green Valley Farm', price: 45, unit: 'kg', rating: 4.8, reviews: 124, grade: 'A+', distance: '3.2 km', organic: true, category: 'Vegetables' },
+  { id: 2, name: 'Basmati Rice', farmer: 'Sunita Devi', farm: 'Golden Fields', price: 85, unit: 'kg', rating: 4.9, reviews: 89, grade: 'A', distance: '5.1 km', organic: false, category: 'Grains' },
+  { id: 3, name: 'Fresh Spinach', farmer: 'Rajesh Kumar', farm: 'Green Valley Farm', price: 30, unit: 'bunch', rating: 4.7, reviews: 67, grade: 'A+', distance: '3.2 km', organic: true, category: 'Vegetables' },
+  { id: 4, name: 'Alphonso Mangoes', farmer: 'Vikram Patil', farm: 'Mango Paradise', price: 250, unit: 'dozen', rating: 5.0, reviews: 203, grade: 'A', distance: '12 km', organic: true, category: 'Fruits' },
+  { id: 5, name: 'Potatoes', farmer: 'Anand Singh', farm: 'Plains Harvest', price: 25, unit: 'kg', rating: 4.5, reviews: 45, grade: 'A', distance: '8.5 km', organic: false, category: 'Vegetables' },
+  { id: 6, name: 'Green Chilies', farmer: 'Lata Kumari', farm: 'Spice Gardens', price: 60, unit: 'kg', rating: 4.6, reviews: 34, grade: 'B+', distance: '6.3 km', organic: false, category: 'Vegetables' },
 ];
 
 const gradeColors: Record<string, string> = {
@@ -27,6 +29,19 @@ const gradeColors: Record<string, string> = {
 const ConsumerHome = () => {
   const navigate = useNavigate();
   const { userName } = useApp();
+  const [activeCategory, setActiveCategory] = useState('All');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredProducts = products.filter((p) => {
+    const matchesCategory = activeCategory === 'All' || p.category === activeCategory || (activeCategory === 'Organic' && p.organic);
+    const matchesSearch = !searchQuery || p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.farm.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
+
+  const handleAddToCart = (e: React.MouseEvent, product: typeof products[0]) => {
+    e.stopPropagation();
+    toast.success(`${product.name} added to cart!`);
+  };
 
   return (
     <div className="p-4 md:p-8 max-w-6xl mx-auto space-y-6">
@@ -40,7 +55,12 @@ const ConsumerHome = () => {
       <div className="flex gap-2">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Search products, farms..." className="pl-10 h-12" />
+          <Input
+            placeholder="Search products, farms..."
+            className="pl-10 h-12"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
         </div>
         <Button variant="outline" size="icon" className="h-12 w-12 shrink-0">
           <Filter className="h-4 w-4" />
@@ -49,8 +69,14 @@ const ConsumerHome = () => {
 
       {/* Categories */}
       <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 md:mx-0 md:px-0">
-        {categories.map((cat, i) => (
-          <Button key={cat} variant={i === 0 ? 'default' : 'outline'} size="sm" className="shrink-0 rounded-full">
+        {categories.map((cat) => (
+          <Button
+            key={cat}
+            variant={activeCategory === cat ? 'default' : 'outline'}
+            size="sm"
+            className="shrink-0 rounded-full"
+            onClick={() => setActiveCategory(cat)}
+          >
             {cat}
           </Button>
         ))}
@@ -68,51 +94,64 @@ const ConsumerHome = () => {
         </div>
         <p className="text-2xl font-bold font-display">12 farms within 15 km</p>
         <p className="text-primary-foreground/70 text-sm mt-1">Fresh produce available for pickup or delivery</p>
-        <Button variant="secondary" size="sm" className="mt-3">Discover Farms →</Button>
+        <Button variant="secondary" size="sm" className="mt-3" onClick={() => navigate('/consumer/browse')}>Discover Farms →</Button>
       </motion.div>
 
       {/* Products Grid */}
       <div>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold font-display text-foreground">Fresh Produce</h2>
-          <button className="text-sm text-primary font-medium hover:underline">View All</button>
+          <button onClick={() => navigate('/consumer/browse')} className="text-sm text-primary font-medium hover:underline">View All</button>
         </div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {products.map((product, i) => (
-            <motion.button
-              key={product.id}
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05 }}
-              onClick={() => navigate(`/consumer/product/${product.id}`)}
-              className="rounded-xl border border-border bg-card shadow-card overflow-hidden text-left group hover:shadow-elevated transition-shadow"
-            >
-              <div className="relative h-36 overflow-hidden">
-                <img src={freshProduce} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                {product.organic && (
-                  <Badge className="absolute top-3 left-3 bg-farm-success/90 text-primary-foreground gap-1">
-                    <Leaf className="h-3 w-3" /> Organic
-                  </Badge>
-                )}
-                <Badge className={`absolute top-3 right-3 ${gradeColors[product.grade]}`}>
-                  {product.grade}
-                </Badge>
-              </div>
-              <div className="p-4">
-                <h3 className="font-semibold text-card-foreground">{product.name}</h3>
-                <p className="text-xs text-muted-foreground mt-0.5">{product.farm} • {product.distance}</p>
-                <div className="flex items-center justify-between mt-2">
-                  <span className="text-lg font-bold text-card-foreground">₹{product.price}<span className="text-xs font-normal text-muted-foreground">/{product.unit}</span></span>
-                  <div className="flex items-center gap-1">
-                    <Star className="h-3.5 w-3.5 fill-farm-gold text-farm-gold" />
-                    <span className="text-sm font-medium text-card-foreground">{product.rating}</span>
-                    <span className="text-xs text-muted-foreground">({product.reviews})</span>
+        {filteredProducts.length === 0 ? (
+          <p className="text-muted-foreground text-center py-8">No products found for this category.</p>
+        ) : (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredProducts.map((product, i) => (
+              <motion.div
+                key={product.id}
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.05 }}
+                className="rounded-xl border border-border bg-card shadow-card overflow-hidden text-left group hover:shadow-elevated transition-shadow"
+              >
+                <button
+                  onClick={() => navigate(`/consumer/product/${product.id}`)}
+                  className="w-full text-left"
+                >
+                  <div className="relative h-36 overflow-hidden">
+                    <img src={freshProduce} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                    {product.organic && (
+                      <Badge className="absolute top-3 left-3 bg-farm-success/90 text-primary-foreground gap-1">
+                        <Leaf className="h-3 w-3" /> Organic
+                      </Badge>
+                    )}
+                    <Badge className={`absolute top-3 right-3 ${gradeColors[product.grade]}`}>
+                      {product.grade}
+                    </Badge>
                   </div>
+                  <div className="p-4">
+                    <h3 className="font-semibold text-card-foreground">{product.name}</h3>
+                    <p className="text-xs text-muted-foreground mt-0.5">{product.farm} • {product.distance}</p>
+                    <div className="flex items-center justify-between mt-2">
+                      <span className="text-lg font-bold text-card-foreground">₹{product.price}<span className="text-xs font-normal text-muted-foreground">/{product.unit}</span></span>
+                      <div className="flex items-center gap-1">
+                        <Star className="h-3.5 w-3.5 fill-farm-gold text-farm-gold" />
+                        <span className="text-sm font-medium text-card-foreground">{product.rating}</span>
+                        <span className="text-xs text-muted-foreground">({product.reviews})</span>
+                      </div>
+                    </div>
+                  </div>
+                </button>
+                <div className="px-4 pb-4">
+                  <Button size="sm" className="w-full gap-1" onClick={(e) => handleAddToCart(e, product)}>
+                    <ShoppingCart className="h-3.5 w-3.5" /> Add to Cart
+                  </Button>
                 </div>
-              </div>
-            </motion.button>
-          ))}
-        </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
