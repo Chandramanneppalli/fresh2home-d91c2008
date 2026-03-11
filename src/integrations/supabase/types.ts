@@ -14,6 +14,41 @@ export type Database = {
   }
   public: {
     Tables: {
+      cart_items: {
+        Row: {
+          created_at: string
+          id: string
+          product_id: string
+          quantity: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          product_id: string
+          quantity?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          product_id?: string
+          quantity?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cart_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       conversations: {
         Row: {
           created_at: string
@@ -189,6 +224,63 @@ export type Database = {
           updated_at?: string
           updated_by?: string | null
           value?: string
+        }
+        Relationships: []
+      }
+      products: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          farm_distance: string | null
+          farm_name: string | null
+          farmer_id: string
+          grade: string
+          id: string
+          in_stock: boolean
+          name: string
+          organic: boolean
+          price: number
+          rating: number
+          review_count: number
+          unit: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          farm_distance?: string | null
+          farm_name?: string | null
+          farmer_id: string
+          grade?: string
+          id?: string
+          in_stock?: boolean
+          name: string
+          organic?: boolean
+          price?: number
+          rating?: number
+          review_count?: number
+          unit?: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          farm_distance?: string | null
+          farm_name?: string | null
+          farmer_id?: string
+          grade?: string
+          id?: string
+          in_stock?: boolean
+          name?: string
+          organic?: boolean
+          price?: number
+          rating?: number
+          review_count?: number
+          unit?: string
+          updated_at?: string
         }
         Relationships: []
       }
