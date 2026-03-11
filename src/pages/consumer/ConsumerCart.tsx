@@ -1,49 +1,119 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trash2, Minus, Plus, CreditCard, Truck, ShoppingBag } from 'lucide-react';
+import { Trash2, Minus, Plus, CreditCard, Truck, ShoppingBag, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { useApp } from '@/contexts/AppContext';
 import { toast } from 'sonner';
 import freshProduce from '@/assets/fresh-produce.jpg';
 
-interface CartItem {
-  id: number;
-  name: string;
-  farm: string;
-  price: number;
-  qty: number;
-  unit: string;
+interface CartItemWithProduct {
+  id: string;
+  quantity: number;
+  product_id: string;
+  products: {
+    id: string;
+    name: string;
+    price: number;
+    unit: string;
+    farm_name: string | null;
+    farmer_id: string;
+  };
 }
-
-const initialCartItems: CartItem[] = [
-  { id: 1, name: 'Organic Tomatoes', farm: 'Green Valley Farm', price: 45, qty: 3, unit: 'kg' },
-  { id: 2, name: 'Basmati Rice', farm: 'Golden Fields', price: 85, qty: 5, unit: 'kg' },
-  { id: 3, name: 'Fresh Spinach', farm: 'Green Valley Farm', price: 30, qty: 2, unit: 'bunch' },
-];
 
 const ConsumerCart = () => {
   const navigate = useNavigate();
-  const [cartItems, setCartItems] = useState<CartItem[]>(initialCartItems);
+  const { user } = useApp();
+  const [cartItems, setCartItems] = useState<CartItemWithProduct[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const updateQty = (id: number, delta: number) => {
-    setCartItems(prev => prev.map(item =>
-      item.id === id ? { ...item, qty: Math.max(1, item.qty + delta) } : item
-    ));
+  const fetchCart = async () => {
+    if (!user) return;
+    const { data, error } = await supabase
+      .from('cart_items')
+      .select('id, quantity, product_id, products(id, name, price, unit, farm_name, farmer_id)')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching cart:', error);
+    } else {
+      setCartItems((data as unknown as CartItemWithProduct[]) || []);
+    }
+    setLoading(false);
   };
 
-  const removeItem = (id: number) => {
+  useEffect(() => {
+    fetchCart();
+
+    if (!user) return;
+    const channel = supabase
+      .channel('cart-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'cart_items', filter: `user_id=eq.${user.id}` }, () => {
+        fetchCart();
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [user]);
+
+  const updateQty = async (id: string, newQty: number) => {
+    if (newQty < 1) return;
+    await supabase.from('cart_items').update({ quantity: newQty }).eq('id', id);
+    setCartItems(prev => prev.map(item => item.id === id ? { ...item, quantity: newQty } : item));
+  };
+
+  const removeItem = async (id: string) => {
     const item = cartItems.find(i => i.id === id);
+    await supabase.from('cart_items').delete().eq('id', id);
     setCartItems(prev => prev.filter(i => i.id !== id));
-    if (item) toast.success(`${item.name} removed from cart`);
+    if (item) toast.success(`${item.products.name} removed from cart`);
   };
 
-  const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.qty, 0);
+  const subtotal = cartItems.reduce((sum, item) => sum + item.products.price * item.quantity, 0);
   const delivery = cartItems.length > 0 ? 40 : 0;
 
-  const handleCheckout = () => {
-    toast.success('Order placed successfully! 🎉');
+  const handleCheckout = async () => {
+    if (!user || cartItems.length === 0) return;
+
+    // Group items by farmer
+    const farmerGroups: Record<string, CartItemWithProduct[]> = {};
+    cartItems.forEach(item => {
+      const fid = item.products.farmer_id;
+      if (!farmerGroups[fid]) farmerGroups[fid] = [];
+      farmerGroups[fid].push(item);
+    });
+
+    // Create an order per farmer
+    for (const [farmerId, items] of Object.entries(farmerGroups)) {
+      const total = items.reduce((s, i) => s + i.products.price * i.quantity, 0);
+      const commission = Math.round(total * 0.05 * 100) / 100;
+
+      await supabase.from('orders').insert({
+        consumer_id: user.id,
+        farmer_id: farmerId,
+        total_amount: total,
+        commission_amount: commission,
+        items: items.map(i => ({ name: i.products.name, qty: i.quantity, price: i.products.price, unit: i.products.unit })),
+        status: 'pending',
+      });
+    }
+
+    // Clear cart
+    await supabase.from('cart_items').delete().eq('user_id', user.id);
     setCartItems([]);
+    toast.success('Order placed successfully! 🎉');
+    navigate('/consumer/orders');
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   if (cartItems.length === 0) {
     return (
@@ -65,26 +135,20 @@ const ConsumerCart = () => {
         <div className="md:col-span-2 space-y-3">
           <AnimatePresence>
             {cartItems.map((item, i) => (
-              <motion.div
-                key={item.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, x: -100 }}
-                transition={{ delay: i * 0.05 }}
-                className="flex gap-3 rounded-xl border border-border bg-card p-3 shadow-card"
-              >
-                <img src={freshProduce} alt={item.name} className="h-20 w-20 rounded-lg object-cover shrink-0" />
+              <motion.div key={item.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, x: -100 }} transition={{ delay: i * 0.05 }}
+                className="flex gap-3 rounded-xl border border-border bg-card p-3 shadow-card">
+                <img src={freshProduce} alt={item.products.name} className="h-20 w-20 rounded-lg object-cover shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-card-foreground text-sm">{item.name}</h3>
-                  <p className="text-xs text-muted-foreground">{item.farm}</p>
-                  <p className="font-bold text-card-foreground mt-1">₹{item.price}/{item.unit}</p>
+                  <h3 className="font-semibold text-card-foreground text-sm">{item.products.name}</h3>
+                  <p className="text-xs text-muted-foreground">{item.products.farm_name}</p>
+                  <p className="font-bold text-card-foreground mt-1">₹{item.products.price}/{item.products.unit}</p>
                 </div>
                 <div className="flex flex-col items-end justify-between">
                   <button onClick={() => removeItem(item.id)} className="text-muted-foreground hover:text-destructive transition-colors"><Trash2 className="h-4 w-4" /></button>
                   <div className="flex items-center gap-2 border border-border rounded-lg">
-                    <button onClick={() => updateQty(item.id, -1)} className="p-1.5 hover:bg-muted rounded-l-lg"><Minus className="h-3 w-3" /></button>
-                    <span className="text-sm font-medium w-6 text-center">{item.qty}</span>
-                    <button onClick={() => updateQty(item.id, 1)} className="p-1.5 hover:bg-muted rounded-r-lg"><Plus className="h-3 w-3" /></button>
+                    <button onClick={() => updateQty(item.id, item.quantity - 1)} className="p-1.5 hover:bg-muted rounded-l-lg"><Minus className="h-3 w-3" /></button>
+                    <span className="text-sm font-medium w-6 text-center">{item.quantity}</span>
+                    <button onClick={() => updateQty(item.id, item.quantity + 1)} className="p-1.5 hover:bg-muted rounded-r-lg"><Plus className="h-3 w-3" /></button>
                   </div>
                 </div>
               </motion.div>
