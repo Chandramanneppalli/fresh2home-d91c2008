@@ -291,6 +291,7 @@ export type Database = {
           farm_name: string | null
           full_name: string
           id: string
+          language: string
           phone: string | null
           updated_at: string
           user_id: string
@@ -301,6 +302,7 @@ export type Database = {
           farm_name?: string | null
           full_name?: string
           id?: string
+          language?: string
           phone?: string | null
           updated_at?: string
           user_id: string
@@ -311,6 +313,7 @@ export type Database = {
           farm_name?: string | null
           full_name?: string
           id?: string
+          language?: string
           phone?: string | null
           updated_at?: string
           user_id?: string
