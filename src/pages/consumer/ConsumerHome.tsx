@@ -6,11 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '@/contexts/AppContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import freshProduce from '@/assets/fresh-produce.jpg';
-
-const categories = ['All', 'Vegetables', 'Fruits', 'Grains', 'Dairy', 'Organic'];
 
 const gradeColors: Record<string, string> = {
   'A+': 'bg-farm-success/15 text-farm-success',
@@ -36,10 +35,20 @@ interface Product {
 const ConsumerHome = () => {
   const navigate = useNavigate();
   const { userName, user } = useApp();
+  const { t } = useLanguage();
   const [activeCategory, setActiveCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const categories = [
+    { key: 'All', label: t.all },
+    { key: 'Vegetables', label: t.vegetables },
+    { key: 'Fruits', label: t.fruits },
+    { key: 'Grains', label: t.grains },
+    { key: 'Dairy', label: t.dairy },
+    { key: 'Organic', label: t.organic },
+  ];
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -60,7 +69,6 @@ const ConsumerHome = () => {
 
     fetchProducts();
 
-    // Realtime subscription for product updates
     const channel = supabase
       .channel('products-realtime')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => {
@@ -89,7 +97,6 @@ const ConsumerHome = () => {
       );
 
     if (error) {
-      // If upsert with quantity 1 conflicts, increment instead
       const { data: existing } = await supabase
         .from('cart_items')
         .select('id, quantity')
@@ -104,20 +111,20 @@ const ConsumerHome = () => {
           .eq('id', existing.id);
       }
     }
-    toast.success(`${product.name} added to cart!`);
+    toast.success(`${product.name} ${t.addToCart}!`);
   };
 
   return (
     <div className="p-4 md:p-8 max-w-6xl mx-auto space-y-6">
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
-        <h1 className="text-2xl md:text-3xl font-bold font-display text-foreground">Hello, {userName} 👋</h1>
-        <p className="text-muted-foreground mt-1">Fresh from farm to your table</p>
+        <h1 className="text-2xl md:text-3xl font-bold font-display text-foreground">{t.hello}, {userName} 👋</h1>
+        <p className="text-muted-foreground mt-1">{t.freshFromFarm}</p>
       </motion.div>
 
       <div className="flex gap-2">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Search products, farms..." className="pl-10 h-12" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+          <Input placeholder={t.searchProducts} className="pl-10 h-12" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
         </div>
         <Button variant="outline" size="icon" className="h-12 w-12 shrink-0">
           <Filter className="h-4 w-4" />
@@ -126,8 +133,8 @@ const ConsumerHome = () => {
 
       <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 md:mx-0 md:px-0">
         {categories.map((cat) => (
-          <Button key={cat} variant={activeCategory === cat ? 'default' : 'outline'} size="sm" className="shrink-0 rounded-full" onClick={() => setActiveCategory(cat)}>
-            {cat}
+          <Button key={cat.key} variant={activeCategory === cat.key ? 'default' : 'outline'} size="sm" className="shrink-0 rounded-full" onClick={() => setActiveCategory(cat.key)}>
+            {cat.label}
           </Button>
         ))}
       </div>
@@ -135,17 +142,17 @@ const ConsumerHome = () => {
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="rounded-2xl bg-gradient-hero p-5 text-primary-foreground">
         <div className="flex items-center gap-2 mb-2">
           <MapPin className="h-5 w-5" />
-          <span className="font-medium">Nearby Farms</span>
+          <span className="font-medium">{t.nearbyFarms}</span>
         </div>
         <p className="text-2xl font-bold font-display">12 farms within 15 km</p>
-        <p className="text-primary-foreground/70 text-sm mt-1">Fresh produce available for pickup or delivery</p>
-        <Button variant="secondary" size="sm" className="mt-3" onClick={() => navigate('/consumer/browse')}>Discover Farms →</Button>
+        <p className="text-primary-foreground/70 text-sm mt-1">{t.freshFromFarm}</p>
+        <Button variant="secondary" size="sm" className="mt-3" onClick={() => navigate('/consumer/browse')}>{t.discoverFarms} →</Button>
       </motion.div>
 
       <div>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold font-display text-foreground">Fresh Produce</h2>
-          <button onClick={() => navigate('/consumer/browse')} className="text-sm text-primary font-medium hover:underline">View All</button>
+          <h2 className="text-xl font-bold font-display text-foreground">{t.freshProduce}</h2>
+          <button onClick={() => navigate('/consumer/browse')} className="text-sm text-primary font-medium hover:underline">{t.viewAll}</button>
         </div>
 
         {loading ? (
@@ -153,7 +160,7 @@ const ConsumerHome = () => {
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         ) : filteredProducts.length === 0 ? (
-          <p className="text-muted-foreground text-center py-8">No products found.</p>
+          <p className="text-muted-foreground text-center py-8">{t.noResults}</p>
         ) : (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredProducts.map((product, i) => (
@@ -164,7 +171,7 @@ const ConsumerHome = () => {
                     <img src={freshProduce} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                     {product.organic && (
                       <Badge className="absolute top-3 left-3 bg-farm-success/90 text-primary-foreground gap-1">
-                        <Leaf className="h-3 w-3" /> Organic
+                        <Leaf className="h-3 w-3" /> {t.organic}
                       </Badge>
                     )}
                     <Badge className={`absolute top-3 right-3 ${gradeColors[product.grade] || 'bg-muted text-muted-foreground'}`}>{product.grade}</Badge>
@@ -184,7 +191,7 @@ const ConsumerHome = () => {
                 </button>
                 <div className="px-4 pb-4">
                   <Button size="sm" className="w-full gap-1" onClick={(e) => handleAddToCart(e, product)}>
-                    <ShoppingCart className="h-3.5 w-3.5" /> Add to Cart
+                    <ShoppingCart className="h-3.5 w-3.5" /> {t.addToCart}
                   </Button>
                 </div>
               </motion.div>

@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Sprout, ArrowLeft, Loader2 } from 'lucide-react';
+import { Sprout, ArrowLeft, Loader2, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { LANGUAGES, type LanguageCode } from '@/contexts/LanguageContext';
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -18,6 +20,7 @@ const Signup = () => {
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [farmName, setFarmName] = useState('');
+  const [language, setLanguage] = useState<LanguageCode>('en');
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSignup = async (e: React.FormEvent) => {
@@ -38,6 +41,7 @@ const Signup = () => {
           role: selectedRole,
           farm_name: selectedRole === 'farmer' ? farmName : null,
           farm_location: null,
+          language,
         },
       },
     });
@@ -99,6 +103,30 @@ const Signup = () => {
               <Input id="farm" placeholder="e.g. Green Valley Farm, Punjab" value={farmName} onChange={e => setFarmName(e.target.value)} className="mt-1.5 h-12" />
             </div>
           )}
+
+          {/* Language Selection */}
+          <div>
+            <Label className="flex items-center gap-1.5">
+              <Globe className="h-4 w-4 text-primary" />
+              Preferred Language *
+            </Label>
+            <Select value={language} onValueChange={(v) => setLanguage(v as LanguageCode)}>
+              <SelectTrigger className="mt-1.5 h-12">
+                <SelectValue placeholder="Select your language" />
+              </SelectTrigger>
+              <SelectContent>
+                {LANGUAGES.map((lang) => (
+                  <SelectItem key={lang.code} value={lang.code}>
+                    <span className="flex items-center gap-2">
+                      <span className="font-medium">{lang.nativeLabel}</span>
+                      <span className="text-muted-foreground text-xs">({lang.label})</span>
+                    </span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           <Button type="submit" size="lg" className="w-full h-12 font-semibold mt-2" disabled={isLoading}>
             {isLoading ? <><Loader2 className="h-4 w-4 animate-spin mr-2" /> Creating...</> : 'Create Account'}
           </Button>

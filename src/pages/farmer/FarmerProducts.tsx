@@ -12,6 +12,7 @@ import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useApp } from '@/contexts/AppContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import freshProduce from '@/assets/fresh-produce.jpg';
 
 interface Product {
@@ -38,6 +39,7 @@ const emptyForm = { name: '', price: '', unit: 'kg', grade: 'A', category: 'Vege
 
 const FarmerProducts = () => {
   const { user } = useApp();
+  const { t } = useLanguage();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -66,7 +68,6 @@ const FarmerProducts = () => {
   useEffect(() => {
     fetchProducts();
 
-    // Realtime subscription
     const channel = supabase
       .channel('farmer-products')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => {
@@ -109,7 +110,6 @@ const FarmerProducts = () => {
 
     setSaving(true);
 
-    // Fetch farmer profile for farm_name
     const { data: profile } = await supabase
       .from('profiles')
       .select('farm_name, farm_location')
@@ -203,21 +203,21 @@ const FarmerProducts = () => {
     <div className="p-4 md:p-8 max-w-6xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold font-display text-foreground">My Products</h1>
-          <p className="text-sm text-muted-foreground mt-1">{products.length} products listed</p>
+          <h1 className="text-2xl font-bold font-display text-foreground">{t.myProducts}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{products.length} {t.productsListed}</p>
         </div>
         <Button className="gap-2" onClick={openAdd}>
-          <Plus className="h-4 w-4" /> Add Product
+          <Plus className="h-4 w-4" /> {t.addProduct}
         </Button>
       </div>
 
       {products.length === 0 ? (
         <div className="text-center py-16 text-muted-foreground">
           <Package className="h-12 w-12 mx-auto mb-3 opacity-40" />
-          <p className="text-lg font-medium">No products yet</p>
-          <p className="text-sm mt-1">Add your first product to start selling to consumers.</p>
+          <p className="text-lg font-medium">{t.noProductsYet}</p>
+          <p className="text-sm mt-1">{t.addFirstProduct}</p>
           <Button className="mt-4 gap-2" onClick={openAdd}>
-            <Plus className="h-4 w-4" /> Add Product
+            <Plus className="h-4 w-4" /> {t.addProduct}
           </Button>
         </div>
       ) : (
@@ -233,18 +233,18 @@ const FarmerProducts = () => {
               <div className="relative h-36 overflow-hidden">
                 <img src={freshProduce} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                 <Badge className={`absolute top-3 right-3 ${gradeColors[product.grade] || 'bg-muted text-muted-foreground'}`}>
-                  Grade {product.grade}
+                  {t.grade} {product.grade}
                 </Badge>
                 {!product.in_stock && (
                   <div className="absolute inset-0 bg-background/60 flex items-center justify-center">
-                    <Badge variant="destructive">Out of Stock</Badge>
+                    <Badge variant="destructive">{t.outOfStock}</Badge>
                   </div>
                 )}
               </div>
               <div className="p-4">
                 <div className="flex items-center justify-between">
                   <h3 className="font-semibold text-card-foreground">{product.name}</h3>
-                  {product.organic && <Badge className="bg-farm-success/15 text-farm-success text-xs">Organic</Badge>}
+                  {product.organic && <Badge className="bg-farm-success/15 text-farm-success text-xs">{t.organic}</Badge>}
                 </div>
                 <div className="flex items-center gap-2 mt-1">
                   <span className="text-lg font-bold text-card-foreground">₹{product.price}/{product.unit}</span>
@@ -252,13 +252,13 @@ const FarmerProducts = () => {
                 <div className="flex items-center justify-between mt-2">
                   <span className="text-xs text-muted-foreground">{product.category}</span>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-muted-foreground">In Stock</span>
+                    <span className="text-xs text-muted-foreground">{t.inStock}</span>
                     <Switch checked={product.in_stock} onCheckedChange={() => toggleStock(product)} />
                   </div>
                 </div>
                 <div className="flex gap-2 mt-3">
                   <Button variant="outline" size="sm" className="flex-1 gap-1" onClick={() => openEdit(product)}>
-                    <Edit className="h-3 w-3" /> Edit
+                    <Edit className="h-3 w-3" /> {t.edit}
                   </Button>
                   <Button variant="outline" size="sm" className="text-destructive hover:text-destructive" onClick={() => setDeleteTarget(product)}>
                     <Trash2 className="h-3 w-3" />
@@ -274,37 +274,37 @@ const FarmerProducts = () => {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>{editingProduct ? 'Edit Product' : 'Add New Product'}</DialogTitle>
+            <DialogTitle>{editingProduct ? t.edit : t.addProduct}</DialogTitle>
             <DialogDescription>
-              {editingProduct ? 'Update the product details below.' : 'Fill in the details to list a new product. It will be visible to consumers immediately.'}
+              {editingProduct ? 'Update the product details below.' : 'Fill in the details to list a new product.'}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Product Name *</Label>
+              <Label htmlFor="name">{t.productName} *</Label>
               <Input id="name" placeholder="e.g. Organic Tomatoes" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
-                <Label htmlFor="price">Price (₹) *</Label>
+                <Label htmlFor="price">{t.price} (₹) *</Label>
                 <Input id="price" type="number" placeholder="45" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} />
               </div>
               <div className="space-y-2">
-                <Label>Category</Label>
+                <Label>{t.category}</Label>
                 <Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Vegetables">Vegetables</SelectItem>
-                    <SelectItem value="Fruits">Fruits</SelectItem>
-                    <SelectItem value="Grains">Grains</SelectItem>
-                    <SelectItem value="Dairy">Dairy</SelectItem>
+                    <SelectItem value="Vegetables">{t.vegetables}</SelectItem>
+                    <SelectItem value="Fruits">{t.fruits}</SelectItem>
+                    <SelectItem value="Grains">{t.grains}</SelectItem>
+                    <SelectItem value="Dairy">{t.dairy}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
-                <Label>Unit</Label>
+                <Label>{t.unit}</Label>
                 <Select value={form.unit} onValueChange={(v) => setForm({ ...form, unit: v })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
@@ -317,7 +317,7 @@ const FarmerProducts = () => {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Grade</Label>
+                <Label>{t.grade}</Label>
                 <Select value={form.grade} onValueChange={(v) => setForm({ ...form, grade: v })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
@@ -329,19 +329,19 @@ const FarmerProducts = () => {
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="desc">Description</Label>
+              <Label htmlFor="desc">{t.description}</Label>
               <Input id="desc" placeholder="Brief description..." value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
             </div>
             <div className="flex items-center gap-3">
               <Switch checked={form.organic} onCheckedChange={(v) => setForm({ ...form, organic: v })} />
-              <Label>Organic Product</Label>
+              <Label>{t.organicProduct}</Label>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setDialogOpen(false)}>{t.cancel}</Button>
             <Button onClick={handleSave} disabled={saving}>
               {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-              {editingProduct ? 'Save Changes' : 'Add Product'}
+              {editingProduct ? t.save : t.addProduct}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -351,15 +351,15 @@ const FarmerProducts = () => {
       <AlertDialog open={!!deleteTarget} onOpenChange={() => setDeleteTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete {deleteTarget?.name}?</AlertDialogTitle>
+            <AlertDialogTitle>{t.delete} {deleteTarget?.name}?</AlertDialogTitle>
             <AlertDialogDescription>
               This will remove the product from your listings and consumers will no longer see it.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t.cancel}</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Delete
+              {t.delete}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

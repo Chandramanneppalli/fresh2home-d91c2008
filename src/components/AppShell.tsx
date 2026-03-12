@@ -2,37 +2,38 @@ import { ReactNode } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Sprout, Home, Package, ShoppingCart, Cloud, MessageCircle, Camera, BarChart3, LogOut, Settings, Users, AlertTriangle, TrendingUp } from 'lucide-react';
 import { useApp, UserRole } from '@/contexts/AppContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface NavItem {
   icon: typeof Home;
-  label: string;
+  labelKey: string;
   path: string;
 }
 
 const farmerNav: NavItem[] = [
-  { icon: Home, label: 'Dashboard', path: '/farmer' },
-  { icon: Package, label: 'Products', path: '/farmer/products' },
-  { icon: ShoppingCart, label: 'Orders', path: '/farmer/orders' },
-  { icon: Cloud, label: 'Climate', path: '/farmer/climate' },
-  { icon: TrendingUp, label: 'Pricing', path: '/farmer/pricing' },
-  { icon: MessageCircle, label: 'Chat', path: '/farmer/chat' },
-  { icon: Camera, label: 'Quality Scan', path: '/farmer/scan' },
+  { icon: Home, labelKey: 'dashboard', path: '/farmer' },
+  { icon: Package, labelKey: 'products', path: '/farmer/products' },
+  { icon: ShoppingCart, labelKey: 'orders', path: '/farmer/orders' },
+  { icon: Cloud, labelKey: 'climate', path: '/farmer/climate' },
+  { icon: TrendingUp, labelKey: 'pricing', path: '/farmer/pricing' },
+  { icon: MessageCircle, labelKey: 'chat', path: '/farmer/chat' },
+  { icon: Camera, labelKey: 'qualityScan', path: '/farmer/scan' },
 ];
 
 const consumerNav: NavItem[] = [
-  { icon: Home, label: 'Home', path: '/consumer' },
-  { icon: Package, label: 'Browse', path: '/consumer/browse' },
-  { icon: ShoppingCart, label: 'Cart', path: '/consumer/cart' },
-  { icon: BarChart3, label: 'Orders', path: '/consumer/orders' },
-  { icon: MessageCircle, label: 'Chat', path: '/consumer/chat' },
+  { icon: Home, labelKey: 'home', path: '/consumer' },
+  { icon: Package, labelKey: 'browse', path: '/consumer/browse' },
+  { icon: ShoppingCart, labelKey: 'cart', path: '/consumer/cart' },
+  { icon: BarChart3, labelKey: 'orders', path: '/consumer/orders' },
+  { icon: MessageCircle, labelKey: 'chat', path: '/consumer/chat' },
 ];
 
 const adminNav: NavItem[] = [
-  { icon: Home, label: 'Overview', path: '/admin' },
-  { icon: Users, label: 'Users', path: '/admin/users' },
-  { icon: TrendingUp, label: 'Revenue', path: '/admin/revenue' },
-  { icon: AlertTriangle, label: 'Disputes', path: '/admin/disputes' },
-  { icon: Settings, label: 'Settings', path: '/admin/settings' },
+  { icon: Home, labelKey: 'overview', path: '/admin' },
+  { icon: Users, labelKey: 'users', path: '/admin/users' },
+  { icon: TrendingUp, labelKey: 'revenue', path: '/admin/revenue' },
+  { icon: AlertTriangle, labelKey: 'disputes', path: '/admin/disputes' },
+  { icon: Settings, labelKey: 'settings', path: '/admin/settings' },
 ];
 
 const getNavItems = (role: UserRole) => {
@@ -41,16 +42,25 @@ const getNavItems = (role: UserRole) => {
   return consumerNav;
 };
 
+const getPortalLabel = (role: UserRole, t: any) => {
+  if (role === 'farmer') return t.farmerPortal;
+  if (role === 'admin') return t.adminPortal;
+  return t.consumerPortal;
+};
+
 const AppShell = ({ children }: { children: ReactNode }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { role, userName, signOut } = useApp();
+  const { t } = useLanguage();
   const navItems = getNavItems(role);
 
   const handleLogout = async () => {
     await signOut();
     navigate('/');
   };
+
+  const getLabel = (key: string) => (t as any)[key] || key;
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -62,7 +72,7 @@ const AppShell = ({ children }: { children: ReactNode }) => {
           </div>
           <div>
             <p className="text-sm font-bold text-sidebar-foreground">FarmLink</p>
-            <p className="text-xs text-sidebar-foreground/60 capitalize">{role} Portal</p>
+            <p className="text-xs text-sidebar-foreground/60">{getPortalLabel(role, t)}</p>
           </div>
         </div>
 
@@ -80,7 +90,7 @@ const AppShell = ({ children }: { children: ReactNode }) => {
                 }`}
               >
                 <item.icon className="h-4.5 w-4.5" />
-                {item.label}
+                {getLabel(item.labelKey)}
               </button>
             );
           })}
@@ -97,7 +107,7 @@ const AppShell = ({ children }: { children: ReactNode }) => {
             </div>
           </div>
           <button onClick={handleLogout} className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors">
-            <LogOut className="h-4 w-4" /> Logout
+            <LogOut className="h-4 w-4" /> {t.logout}
           </button>
         </div>
       </aside>
@@ -134,7 +144,7 @@ const AppShell = ({ children }: { children: ReactNode }) => {
                 }`}
               >
                 <item.icon className="h-5 w-5" />
-                <span className="text-[10px] font-medium">{item.label}</span>
+                <span className="text-[10px] font-medium">{getLabel(item.labelKey)}</span>
               </button>
             );
           })}
