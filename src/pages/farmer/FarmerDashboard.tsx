@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { IndianRupee, ShoppingCart, TrendingUp, Package, CloudSun, ArrowUpRight, Star, Truck } from 'lucide-react';
 import { StatCard, SectionHeader } from '@/components/StatCard';
 import { useApp } from '@/contexts/AppContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { useNavigate } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
@@ -29,6 +30,7 @@ const statusColors: Record<string, string> = {
 
 const FarmerDashboard = () => {
   const { userName } = useApp();
+  const { t } = useLanguage();
   const navigate = useNavigate();
 
   return (
@@ -36,24 +38,23 @@ const FarmerDashboard = () => {
       {/* Welcome */}
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
         <h1 className="text-2xl md:text-3xl font-bold font-display text-foreground">
-          Good Morning, {userName} 🌾
+          {t.goodMorning}, {userName} 🌾
         </h1>
-        <p className="text-muted-foreground mt-1">Here's your farm overview for today</p>
+        <p className="text-muted-foreground mt-1">{t.farmOverview}</p>
       </motion.div>
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-        <StatCard icon={IndianRupee} label="Today's Earnings" value="₹4,120" change="+12%" positive variant="primary" />
-        <StatCard icon={ShoppingCart} label="Active Orders" value={8} change="+3" positive variant="gold" />
-        <StatCard icon={Package} label="Products Listed" value={24} variant="default" />
-        <StatCard icon={TrendingUp} label="AI Price Score" value="92%" change="+5%" positive variant="sky" />
+        <StatCard icon={IndianRupee} label={t.todaysEarnings} value="₹4,120" change="+12%" positive variant="primary" />
+        <StatCard icon={ShoppingCart} label={t.activeOrders} value={8} change="+3" positive variant="gold" />
+        <StatCard icon={Package} label={t.products} value={24} variant="default" />
+        <StatCard icon={TrendingUp} label={t.aiPriceScore} value="92%" change="+5%" positive variant="sky" />
       </div>
 
       {/* Chart + Weather */}
       <div className="grid md:grid-cols-3 gap-4 md:gap-6">
-        {/* Earnings Chart */}
         <div className="md:col-span-2 rounded-xl border border-border bg-card p-4 shadow-card">
-          <SectionHeader title="Weekly Earnings" subtitle="Revenue overview" />
+          <SectionHeader title={t.weeklyEarnings} />
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={earningsData}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
@@ -65,9 +66,8 @@ const FarmerDashboard = () => {
           </ResponsiveContainer>
         </div>
 
-        {/* Climate Widget */}
         <div className="rounded-xl border border-border bg-card p-4 shadow-card">
-          <SectionHeader title="Climate" />
+          <SectionHeader title={t.climate} />
           <div className="space-y-4">
             <div className="flex items-center gap-3">
               <CloudSun className="h-10 w-10 text-farm-gold" />
@@ -91,7 +91,7 @@ const FarmerDashboard = () => {
       {/* Recent Orders */}
       <div className="rounded-xl border border-border bg-card shadow-card overflow-hidden">
         <div className="p-4">
-          <SectionHeader title="Recent Orders" action={<button onClick={() => navigate('/farmer/orders')} className="text-sm text-primary font-medium flex items-center gap-1 hover:underline">View All <ArrowUpRight className="h-3 w-3" /></button>} />
+          <SectionHeader title={t.recentOrders} action={<button onClick={() => navigate('/farmer/orders')} className="text-sm text-primary font-medium flex items-center gap-1 hover:underline">{t.viewAll} <ArrowUpRight className="h-3 w-3" /></button>} />
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -125,7 +125,7 @@ const FarmerDashboard = () => {
 
       {/* AI Suggestions */}
       <div className="rounded-xl border border-primary/20 bg-accent p-4 shadow-card">
-        <SectionHeader title="🤖 AI Insights" subtitle="Smart recommendations for today" />
+        <SectionHeader title={t.aiInsights} subtitle="Smart recommendations for today" />
         <div className="grid md:grid-cols-3 gap-3">
           {[
             { icon: TrendingUp, text: 'Tomato prices up 8% this week. Consider listing more.', color: 'text-farm-success' },
