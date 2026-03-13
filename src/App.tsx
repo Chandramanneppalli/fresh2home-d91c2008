@@ -34,6 +34,7 @@ import AdminDisputes from "./pages/admin/AdminDisputes";
 import AdminSettings from "./pages/admin/AdminSettings";
 
 import ChatPage from "./pages/shared/ChatPage";
+import ProfilePage from "./pages/shared/ProfilePage";
 import TraceLot from "./pages/TraceLot";
 
 const queryClient = new QueryClient();
