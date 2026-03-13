@@ -47,8 +47,9 @@ const ProfilePage = () => {
   };
 
   const copyUserId = () => {
-    if (user?.id) {
-      navigator.clipboard.writeText(user.id);
+    const displayId = profile?.display_id;
+    if (displayId) {
+      navigator.clipboard.writeText(displayId);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
@@ -97,7 +98,7 @@ const ProfilePage = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs text-muted-foreground font-medium">User ID</p>
-              <p className="text-sm text-foreground font-mono break-all">{user?.id || '—'}</p>
+              <p className="text-sm text-foreground font-mono break-all">{profile?.display_id || '—'}</p>
             </div>
             <Button variant="ghost" size="icon" onClick={copyUserId} className="shrink-0">
               {copied ? <Check className="h-4 w-4 text-primary" /> : <Copy className="h-4 w-4 text-muted-foreground" />}
