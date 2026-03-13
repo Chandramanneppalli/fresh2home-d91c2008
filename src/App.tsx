@@ -83,6 +83,7 @@ const App = () => (
             <Route path="/consumer/cart" element={<ProtectedRoute allowedRoles={['consumer']}><AppShell><ConsumerCart /></AppShell></ProtectedRoute>} />
             <Route path="/consumer/orders" element={<ProtectedRoute allowedRoles={['consumer']}><AppShell><ConsumerOrders /></AppShell></ProtectedRoute>} />
             <Route path="/consumer/chat" element={<ProtectedRoute allowedRoles={['consumer']}><AppShell><ChatPage /></AppShell></ProtectedRoute>} />
+            <Route path="/consumer/profile" element={<ProtectedRoute allowedRoles={['consumer']}><AppShell><ProfilePage /></AppShell></ProtectedRoute>} />
 
             {/* Admin */}
             <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']}><AppShell><AdminDashboard /></AppShell></ProtectedRoute>} />
