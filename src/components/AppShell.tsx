@@ -125,9 +125,9 @@ const AppShell = ({ children }: { children: ReactNode }) => {
             </div>
             <span className="font-bold font-display text-sm">FarmLink</span>
           </div>
-          <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs font-bold">
+          <button onClick={() => navigate(`/${role}/profile`)} className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs font-bold">
             {userName.charAt(0).toUpperCase()}
-          </div>
+          </button>
         </header>
 
         <main className="flex-1 overflow-auto">
