@@ -74,6 +74,7 @@ const App = () => (
             <Route path="/farmer/pricing" element={<ProtectedRoute allowedRoles={['farmer']}><AppShell><FarmerPricing /></AppShell></ProtectedRoute>} />
             <Route path="/farmer/chat" element={<ProtectedRoute allowedRoles={['farmer']}><AppShell><ChatPage /></AppShell></ProtectedRoute>} />
             <Route path="/farmer/scan" element={<ProtectedRoute allowedRoles={['farmer']}><AppShell><FarmerQualityScan /></AppShell></ProtectedRoute>} />
+            <Route path="/farmer/profile" element={<ProtectedRoute allowedRoles={['farmer']}><AppShell><ProfilePage /></AppShell></ProtectedRoute>} />
 
             {/* Consumer */}
             <Route path="/consumer" element={<ProtectedRoute allowedRoles={['consumer']}><AppShell><ConsumerHome /></AppShell></ProtectedRoute>} />
