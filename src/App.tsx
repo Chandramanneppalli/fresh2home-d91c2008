@@ -91,6 +91,7 @@ const App = () => (
             <Route path="/admin/revenue" element={<ProtectedRoute allowedRoles={['admin']}><AppShell><AdminRevenue /></AppShell></ProtectedRoute>} />
             <Route path="/admin/disputes" element={<ProtectedRoute allowedRoles={['admin']}><AppShell><AdminDisputes /></AppShell></ProtectedRoute>} />
             <Route path="/admin/settings" element={<ProtectedRoute allowedRoles={['admin']}><AppShell><AdminSettings /></AppShell></ProtectedRoute>} />
+            <Route path="/admin/profile" element={<ProtectedRoute allowedRoles={['admin']}><AppShell><ProfilePage /></AppShell></ProtectedRoute>} />
 
             {/* Traceability */}
             <Route path="/trace/:lotId" element={<TraceLot />} />
