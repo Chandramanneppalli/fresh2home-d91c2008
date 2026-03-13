@@ -47,8 +47,9 @@ const ProfilePage = () => {
   };
 
   const copyUserId = () => {
-    if (user?.id) {
-      navigator.clipboard.writeText(user.id);
+    const displayId = profile?.display_id;
+    if (displayId) {
+      navigator.clipboard.writeText(displayId);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
