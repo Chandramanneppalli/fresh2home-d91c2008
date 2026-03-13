@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Sprout, Home, Package, ShoppingCart, Cloud, MessageCircle, Camera, BarChart3, LogOut, Settings, Users, AlertTriangle, TrendingUp } from 'lucide-react';
+import { Sprout, Home, Package, ShoppingCart, Cloud, MessageCircle, Camera, BarChart3, LogOut, Settings, Users, AlertTriangle, TrendingUp, UserCircle } from 'lucide-react';
 import { useApp, UserRole } from '@/contexts/AppContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 
@@ -97,7 +97,10 @@ const AppShell = ({ children }: { children: ReactNode }) => {
         </nav>
 
         <div className="px-3 py-4 border-t border-sidebar-border">
-          <div className="flex items-center gap-3 px-3 py-2 mb-2">
+          <button
+            onClick={() => navigate(`/${role}/profile`)}
+            className="flex w-full items-center gap-3 px-3 py-2 mb-2 rounded-lg hover:bg-sidebar-accent/50 transition-colors"
+          >
             <div className="h-8 w-8 rounded-full bg-sidebar-primary flex items-center justify-center text-sidebar-primary-foreground text-xs font-bold">
               {userName.charAt(0).toUpperCase()}
             </div>
@@ -105,7 +108,7 @@ const AppShell = ({ children }: { children: ReactNode }) => {
               <p className="text-sm font-medium text-sidebar-foreground truncate">{userName}</p>
               <p className="text-xs text-sidebar-foreground/50 capitalize">{role}</p>
             </div>
-          </div>
+          </button>
           <button onClick={handleLogout} className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors">
             <LogOut className="h-4 w-4" /> {t.logout}
           </button>
@@ -122,9 +125,9 @@ const AppShell = ({ children }: { children: ReactNode }) => {
             </div>
             <span className="font-bold font-display text-sm">FarmLink</span>
           </div>
-          <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs font-bold">
+          <button onClick={() => navigate(`/${role}/profile`)} className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs font-bold">
             {userName.charAt(0).toUpperCase()}
-          </div>
+          </button>
         </header>
 
         <main className="flex-1 overflow-auto">

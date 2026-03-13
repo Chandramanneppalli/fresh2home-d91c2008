@@ -34,6 +34,7 @@ import AdminDisputes from "./pages/admin/AdminDisputes";
 import AdminSettings from "./pages/admin/AdminSettings";
 
 import ChatPage from "./pages/shared/ChatPage";
+import ProfilePage from "./pages/shared/ProfilePage";
 import TraceLot from "./pages/TraceLot";
 
 const queryClient = new QueryClient();
@@ -73,6 +74,7 @@ const App = () => (
             <Route path="/farmer/pricing" element={<ProtectedRoute allowedRoles={['farmer']}><AppShell><FarmerPricing /></AppShell></ProtectedRoute>} />
             <Route path="/farmer/chat" element={<ProtectedRoute allowedRoles={['farmer']}><AppShell><ChatPage /></AppShell></ProtectedRoute>} />
             <Route path="/farmer/scan" element={<ProtectedRoute allowedRoles={['farmer']}><AppShell><FarmerQualityScan /></AppShell></ProtectedRoute>} />
+            <Route path="/farmer/profile" element={<ProtectedRoute allowedRoles={['farmer']}><AppShell><ProfilePage /></AppShell></ProtectedRoute>} />
 
             {/* Consumer */}
             <Route path="/consumer" element={<ProtectedRoute allowedRoles={['consumer']}><AppShell><ConsumerHome /></AppShell></ProtectedRoute>} />
@@ -81,6 +83,7 @@ const App = () => (
             <Route path="/consumer/cart" element={<ProtectedRoute allowedRoles={['consumer']}><AppShell><ConsumerCart /></AppShell></ProtectedRoute>} />
             <Route path="/consumer/orders" element={<ProtectedRoute allowedRoles={['consumer']}><AppShell><ConsumerOrders /></AppShell></ProtectedRoute>} />
             <Route path="/consumer/chat" element={<ProtectedRoute allowedRoles={['consumer']}><AppShell><ChatPage /></AppShell></ProtectedRoute>} />
+            <Route path="/consumer/profile" element={<ProtectedRoute allowedRoles={['consumer']}><AppShell><ProfilePage /></AppShell></ProtectedRoute>} />
 
             {/* Admin */}
             <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']}><AppShell><AdminDashboard /></AppShell></ProtectedRoute>} />
@@ -88,6 +91,7 @@ const App = () => (
             <Route path="/admin/revenue" element={<ProtectedRoute allowedRoles={['admin']}><AppShell><AdminRevenue /></AppShell></ProtectedRoute>} />
             <Route path="/admin/disputes" element={<ProtectedRoute allowedRoles={['admin']}><AppShell><AdminDisputes /></AppShell></ProtectedRoute>} />
             <Route path="/admin/settings" element={<ProtectedRoute allowedRoles={['admin']}><AppShell><AdminSettings /></AppShell></ProtectedRoute>} />
+            <Route path="/admin/profile" element={<ProtectedRoute allowedRoles={['admin']}><AppShell><ProfilePage /></AppShell></ProtectedRoute>} />
 
             {/* Traceability */}
             <Route path="/trace/:lotId" element={<TraceLot />} />
