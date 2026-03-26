@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Sprout, Home, Package, ShoppingCart, Cloud, MessageCircle, Camera, BarChart3, LogOut, Settings, Users, AlertTriangle, TrendingUp, UserCircle } from 'lucide-react';
+import VoiceAssistantButton from '@/components/VoiceAssistantButton';
 import { useApp, UserRole } from '@/contexts/AppContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 
@@ -152,6 +153,7 @@ const AppShell = ({ children }: { children: ReactNode }) => {
             );
           })}
         </nav>
+        <VoiceAssistantButton />
       </div>
     </div>
   );
