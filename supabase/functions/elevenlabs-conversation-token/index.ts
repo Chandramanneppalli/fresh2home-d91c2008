@@ -16,6 +16,20 @@ serve(async (req) => {
 
     const AGENT_ID = "i23UdVF5k8Qinq4GA05x";
 
+    // First verify the agent exists
+    const agentCheck = await fetch(
+      `https://api.elevenlabs.io/v1/convai/agents/${AGENT_ID}`,
+      {
+        headers: { "xi-api-key": ELEVENLABS_API_KEY },
+      }
+    );
+    
+    if (!agentCheck.ok) {
+      const errText = await agentCheck.text();
+      console.error("Agent check failed:", agentCheck.status, errText);
+      throw new Error(`Agent not found (${agentCheck.status}): ${errText}`);
+    }
+
     const response = await fetch(
       `https://api.elevenlabs.io/v1/convai/conversation/get-signed-url?agent_id=${AGENT_ID}`,
       {
@@ -28,7 +42,7 @@ serve(async (req) => {
     if (!response.ok) {
       const errText = await response.text();
       console.error("ElevenLabs token error:", response.status, errText);
-      throw new Error(`Failed to get signed URL: ${response.status}`);
+      throw new Error(`Failed to get signed URL: ${response.status} - ${errText}`);
     }
 
     const { signed_url } = await response.json();
