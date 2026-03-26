@@ -25,12 +25,12 @@ const VoiceAssistantButton = () => {
       setAgentText('');
       setUserText('');
     },
-    onMessage: (message) => {
+    onMessage: (message: any) => {
       if (message.type === 'agent_response') {
-        setAgentText((message as any).agent_response_event?.agent_response || '');
+        setAgentText(message.agent_response_event?.agent_response || '');
       }
       if (message.type === 'user_transcript') {
-        setUserText((message as any).user_transcription_event?.user_transcript || '');
+        setUserText(message.user_transcription_event?.user_transcript || '');
       }
     },
     onError: (error) => {
