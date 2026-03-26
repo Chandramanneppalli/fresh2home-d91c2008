@@ -153,6 +153,7 @@ const AppShell = ({ children }: { children: ReactNode }) => {
             );
           })}
         </nav>
+        <VoiceAssistantButton />
       </div>
     </div>
   );
