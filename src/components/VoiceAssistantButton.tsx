@@ -70,8 +70,8 @@ const VoiceAssistantButton = () => {
   }, [role, location.pathname, speak, toast]);
 
   const startListening = useCallback(() => {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) {
+    const SpeechRecognitionAPI = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognitionAPI) {
       toast({
         title: 'Not Supported',
         description: 'Speech recognition is not supported in this browser. Try Chrome or Edge.',
