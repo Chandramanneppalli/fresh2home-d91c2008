@@ -18,6 +18,7 @@ const VoiceAssistantButton = () => {
   const [userText, setUserText] = useState('');
   const recognitionRef = useRef<any>(null);
   const synthRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const lastTranscriptRef = useRef('');
 
   const speak = useCallback((text: string): Promise<void> => {
     return new Promise((resolve) => {
