@@ -108,7 +108,7 @@ const VoiceAssistantButton = () => {
       }
     };
 
-    recognition.onerror = (event) => {
+    recognition.onerror = (event: any) => {
       console.error('Speech recognition error:', event.error);
       setVoiceState('idle');
       if (event.error !== 'no-speech') {
