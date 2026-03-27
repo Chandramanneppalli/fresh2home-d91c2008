@@ -92,9 +92,11 @@ const VoiceAssistantButton = () => {
       setAgentText('');
     };
 
-    recognition.onresult = (event) => {
+    recognition.onresult = (event: any) => {
       const last = event.results[event.results.length - 1];
-      setUserText(last[0].transcript);
+      const transcript = last[0].transcript;
+      lastTranscriptRef.current = transcript;
+      setUserText(transcript);
     };
 
     recognition.onend = () => {
