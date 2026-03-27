@@ -16,33 +16,37 @@ serve(async (req) => {
 
     const AGENT_ID = "gMRjEAcWCvjoyqIfZqlp";
 
-    // First verify the agent exists
-    const agentCheck = await fetch(
-      `https://api.elevenlabs.io/v1/convai/agents/${AGENT_ID}`,
-      {
-        headers: { "xi-api-key": ELEVENLABS_API_KEY },
+    const apiBases = [
+      "https://api.elevenlabs.io",
+      "https://api.us.elevenlabs.io",
+      "https://api.eu.residency.elevenlabs.io",
+    ];
+
+    let response: Response | null = null;
+    let lastError = "Unknown ElevenLabs error";
+
+    for (const baseUrl of apiBases) {
+      response = await fetch(
+        `${baseUrl}/v1/convai/conversation/get-signed-url?agent_id=${AGENT_ID}`,
+        {
+          headers: {
+            "xi-api-key": ELEVENLABS_API_KEY,
+          },
+        }
+      );
+
+      if (response.ok) {
+        break;
       }
-    );
-    
-    if (!agentCheck.ok) {
-      const errText = await agentCheck.text();
-      console.error("Agent check failed:", agentCheck.status, errText);
-      throw new Error(`Agent not found (${agentCheck.status}): ${errText}`);
+
+      const errText = await response.text();
+      lastError = `${baseUrl} [${response.status}] ${errText}`;
+      console.error("ElevenLabs token error:", lastError);
+      response = null;
     }
 
-    const response = await fetch(
-      `https://api.elevenlabs.io/v1/convai/conversation/get-signed-url?agent_id=${AGENT_ID}`,
-      {
-        headers: {
-          "xi-api-key": ELEVENLABS_API_KEY,
-        },
-      }
-    );
-
-    if (!response.ok) {
-      const errText = await response.text();
-      console.error("ElevenLabs token error:", response.status, errText);
-      throw new Error(`Failed to get signed URL: ${response.status} - ${errText}`);
+    if (!response) {
+      throw new Error(`Failed to get signed URL: ${lastError}`);
     }
 
     const { signed_url } = await response.json();
