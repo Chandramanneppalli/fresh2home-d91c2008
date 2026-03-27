@@ -16,7 +16,7 @@ const VoiceAssistantButton = () => {
   const [voiceState, setVoiceState] = useState<VoiceState>('idle');
   const [agentText, setAgentText] = useState('');
   const [userText, setUserText] = useState('');
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const recognitionRef = useRef<any>(null);
   const synthRef = useRef<SpeechSynthesisUtterance | null>(null);
 
   const speak = useCallback((text: string): Promise<void> => {
