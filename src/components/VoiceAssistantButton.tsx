@@ -80,7 +80,7 @@ const VoiceAssistantButton = () => {
       return;
     }
 
-    const recognition = new SpeechRecognition();
+    const recognition = new SpeechRecognitionAPI();
     recognition.lang = 'en-US';
     recognition.interimResults = true;
     recognition.continuous = false;
