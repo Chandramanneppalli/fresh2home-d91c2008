@@ -100,17 +100,13 @@ const VoiceAssistantButton = () => {
     };
 
     recognition.onend = () => {
-      const finalTranscript = userText;
-      // Use a small timeout to ensure state is updated
-      setTimeout(() => {
-        const el = document.getElementById('voice-user-text');
-        const text = el?.textContent || '';
-        if (text.trim()) {
-          processWithAI(text.trim());
-        } else {
-          setVoiceState('idle');
-        }
-      }, 100);
+      const text = lastTranscriptRef.current.trim();
+      if (text) {
+        processWithAI(text);
+      } else {
+        setVoiceState('idle');
+      }
+    };
     };
 
     recognition.onerror = (event) => {
