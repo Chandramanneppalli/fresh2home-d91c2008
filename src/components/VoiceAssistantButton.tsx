@@ -39,6 +39,7 @@ const VoiceAssistantButton = () => {
     return new Promise((resolve) => {
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = LANG_TO_BCP47[language] || 'en-IN';
       utterance.rate = 1;
       utterance.pitch = 1;
       utterance.onend = () => resolve();
@@ -46,7 +47,7 @@ const VoiceAssistantButton = () => {
       synthRef.current = utterance;
       window.speechSynthesis.speak(utterance);
     });
-  }, []);
+  }, [language]);
 
   const processWithAI = useCallback(async (transcript: string) => {
     setVoiceState('processing');
