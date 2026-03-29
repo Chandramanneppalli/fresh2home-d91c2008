@@ -140,7 +140,7 @@ const VoiceAssistantButton = () => {
 
     recognitionRef.current = recognition;
     recognition.start();
-  }, [toast, processWithAI]);
+  }, [toast, processWithAI, language]);
 
   const stopListening = useCallback(() => {
     recognitionRef.current?.stop();
