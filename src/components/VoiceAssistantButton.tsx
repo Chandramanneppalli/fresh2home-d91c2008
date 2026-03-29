@@ -25,6 +25,7 @@ type VoiceState = 'idle' | 'listening' | 'processing' | 'speaking';
 
 const VoiceAssistantButton = () => {
   const { session, role } = useApp();
+  const { language } = useLanguage();
   const { toast } = useToast();
   const location = useLocation();
   const [voiceState, setVoiceState] = useState<VoiceState>('idle');
