@@ -58,7 +58,7 @@ const VoiceAssistantButton = () => {
         body: {
           transcript,
           role: role || 'consumer',
-          language: 'en',
+          language: language,
           currentPage: location.pathname,
         },
       });
