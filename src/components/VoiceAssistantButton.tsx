@@ -98,7 +98,7 @@ const VoiceAssistantButton = () => {
     }
 
     const recognition = new SpeechRecognitionAPI();
-    recognition.lang = 'en-US';
+    recognition.lang = LANG_TO_BCP47[language] || 'en-IN';
     recognition.interimResults = true;
     recognition.continuous = false;
 
