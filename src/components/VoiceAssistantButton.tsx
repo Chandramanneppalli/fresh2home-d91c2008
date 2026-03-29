@@ -3,14 +3,29 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Mic, MicOff, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useApp } from '@/contexts/AppContext';
+import { useLanguage, LanguageCode } from '@/contexts/LanguageContext';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useLocation } from 'react-router-dom';
+
+const LANG_TO_BCP47: Record<LanguageCode, string> = {
+  en: 'en-IN',
+  hi: 'hi-IN',
+  ta: 'ta-IN',
+  te: 'te-IN',
+  kn: 'kn-IN',
+  bn: 'bn-IN',
+  mr: 'mr-IN',
+  gu: 'gu-IN',
+  pa: 'pa-IN',
+  ml: 'ml-IN',
+};
 
 type VoiceState = 'idle' | 'listening' | 'processing' | 'speaking';
 
 const VoiceAssistantButton = () => {
   const { session, role } = useApp();
+  const { language } = useLanguage();
   const { toast } = useToast();
   const location = useLocation();
   const [voiceState, setVoiceState] = useState<VoiceState>('idle');
@@ -24,6 +39,7 @@ const VoiceAssistantButton = () => {
     return new Promise((resolve) => {
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = LANG_TO_BCP47[language] || 'en-IN';
       utterance.rate = 1;
       utterance.pitch = 1;
       utterance.onend = () => resolve();
@@ -31,7 +47,7 @@ const VoiceAssistantButton = () => {
       synthRef.current = utterance;
       window.speechSynthesis.speak(utterance);
     });
-  }, []);
+  }, [language]);
 
   const processWithAI = useCallback(async (transcript: string) => {
     setVoiceState('processing');
@@ -42,7 +58,7 @@ const VoiceAssistantButton = () => {
         body: {
           transcript,
           role: role || 'consumer',
-          language: 'en',
+          language: language,
           currentPage: location.pathname,
         },
       });
@@ -82,7 +98,7 @@ const VoiceAssistantButton = () => {
     }
 
     const recognition = new SpeechRecognitionAPI();
-    recognition.lang = 'en-US';
+    recognition.lang = LANG_TO_BCP47[language] || 'en-IN';
     recognition.interimResults = true;
     recognition.continuous = false;
 
@@ -124,7 +140,7 @@ const VoiceAssistantButton = () => {
 
     recognitionRef.current = recognition;
     recognition.start();
-  }, [toast, processWithAI]);
+  }, [toast, processWithAI, language]);
 
   const stopListening = useCallback(() => {
     recognitionRef.current?.stop();
