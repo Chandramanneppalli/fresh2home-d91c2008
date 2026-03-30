@@ -12,6 +12,7 @@ import Welcome from "./pages/Welcome";
 import RoleSelect from "./pages/RoleSelect";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+import VerifyOtp from "./pages/VerifyOtp";
 
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
