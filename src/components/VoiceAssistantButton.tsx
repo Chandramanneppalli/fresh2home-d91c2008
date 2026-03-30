@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mic, MicOff, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -34,12 +34,28 @@ const VoiceAssistantButton = () => {
   const recognitionRef = useRef<any>(null);
   const synthRef = useRef<SpeechSynthesisUtterance | null>(null);
   const lastTranscriptRef = useRef('');
+  const languageRef = useRef(language);
+  const pathnameRef = useRef(location.pathname);
+
+  useEffect(() => {
+    languageRef.current = language;
+    pathnameRef.current = location.pathname;
+  }, [language, location.pathname]);
 
   const speak = useCallback((text: string): Promise<void> => {
     return new Promise((resolve) => {
       window.speechSynthesis.cancel();
+      const currentLanguage = languageRef.current;
+      const targetLang = LANG_TO_BCP47[currentLanguage] || 'en-IN';
       const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = LANG_TO_BCP47[language] || 'en-IN';
+      const voices = window.speechSynthesis.getVoices();
+      const matchedVoice = voices.find((voice) => voice.lang.toLowerCase() === targetLang.toLowerCase())
+        || voices.find((voice) => voice.lang.toLowerCase().startsWith(currentLanguage));
+
+      utterance.lang = matchedVoice?.lang || targetLang;
+      if (matchedVoice) {
+        utterance.voice = matchedVoice;
+      }
       utterance.rate = 1;
       utterance.pitch = 1;
       utterance.onend = () => resolve();
@@ -47,7 +63,7 @@ const VoiceAssistantButton = () => {
       synthRef.current = utterance;
       window.speechSynthesis.speak(utterance);
     });
-  }, [language]);
+  }, []);
 
   const processWithAI = useCallback(async (transcript: string) => {
     setVoiceState('processing');
@@ -58,8 +74,8 @@ const VoiceAssistantButton = () => {
         body: {
           transcript,
           role: role || 'consumer',
-          language: language,
-          currentPage: location.pathname,
+          language: languageRef.current,
+          currentPage: pathnameRef.current,
         },
       });
 
@@ -84,7 +100,7 @@ const VoiceAssistantButton = () => {
         variant: 'destructive',
       });
     }
-  }, [role, language, location.pathname, speak, toast]);
+  }, [role, speak, toast]);
 
   const startListening = useCallback(() => {
     const SpeechRecognitionAPI = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -98,7 +114,7 @@ const VoiceAssistantButton = () => {
     }
 
     const recognition = new SpeechRecognitionAPI();
-    recognition.lang = LANG_TO_BCP47[language] || 'en-IN';
+    recognition.lang = LANG_TO_BCP47[languageRef.current] || 'en-IN';
     recognition.interimResults = true;
     recognition.continuous = false;
 
@@ -140,7 +156,7 @@ const VoiceAssistantButton = () => {
 
     recognitionRef.current = recognition;
     recognition.start();
-  }, [toast, processWithAI, language]);
+  }, [toast, processWithAI]);
 
   const stopListening = useCallback(() => {
     recognitionRef.current?.stop();
