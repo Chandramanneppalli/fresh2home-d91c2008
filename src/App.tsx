@@ -12,6 +12,7 @@ import Welcome from "./pages/Welcome";
 import RoleSelect from "./pages/RoleSelect";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+import VerifyOtp from "./pages/VerifyOtp";
 
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
@@ -67,6 +68,7 @@ const App = () => (
             <Route path="/login" element={<AuthRoute><Login /></AuthRoute>} />
             <Route path="/signup" element={<AuthRoute><Signup /></AuthRoute>} />
             
+            <Route path="/verify-otp" element={<VerifyOtp />} />
             <Route path="/forgot-password" element={<AuthRoute><ForgotPassword /></AuthRoute>} />
             <Route path="/reset-password" element={<ResetPassword />} />
 

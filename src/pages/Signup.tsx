@@ -53,10 +53,10 @@ const Signup = () => {
     }
 
     toast({
-      title: 'Account created!',
-      description: 'Welcome to FarmLink!',
+      title: 'Check your email!',
+      description: 'We sent you a verification code.',
     });
-    // Auth state change in AppContext will handle navigation
+    navigate('/verify-otp', { state: { email } });
   };
 
   return (
