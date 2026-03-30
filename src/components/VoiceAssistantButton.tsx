@@ -84,7 +84,7 @@ const VoiceAssistantButton = () => {
         variant: 'destructive',
       });
     }
-  }, [role, location.pathname, speak, toast]);
+  }, [role, language, location.pathname, speak, toast]);
 
   const startListening = useCallback(() => {
     const SpeechRecognitionAPI = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
