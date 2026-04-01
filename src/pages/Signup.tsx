@@ -53,10 +53,9 @@ const Signup = () => {
     }
 
     toast({
-      title: 'Check your email!',
-      description: 'We sent you a verification code.',
+      title: 'Account created!',
+      description: 'Welcome to FarmLink Connect.',
     });
-    navigate('/verify-otp', { state: { email } });
   };
 
   return (
