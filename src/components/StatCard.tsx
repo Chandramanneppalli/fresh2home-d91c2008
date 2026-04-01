@@ -9,6 +9,7 @@ interface StatCardProps {
   change?: string;
   positive?: boolean;
   variant?: 'default' | 'primary' | 'gold' | 'sky';
+  onClick?: () => void;
 }
 
 const variantStyles = {
