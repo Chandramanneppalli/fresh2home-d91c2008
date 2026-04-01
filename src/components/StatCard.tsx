@@ -9,6 +9,7 @@ interface StatCardProps {
   change?: string;
   positive?: boolean;
   variant?: 'default' | 'primary' | 'gold' | 'sky';
+  onClick?: () => void;
 }
 
 const variantStyles = {
@@ -25,11 +26,12 @@ const iconStyles = {
   sky: 'bg-farm-sky/20 text-farm-sky',
 };
 
-export const StatCard = ({ icon: Icon, label, value, change, positive, variant = 'default' }: StatCardProps) => (
+export const StatCard = ({ icon: Icon, label, value, change, positive, variant = 'default', onClick }: StatCardProps) => (
   <motion.div
     initial={{ opacity: 0, y: 10 }}
     animate={{ opacity: 1, y: 0 }}
-    className={`rounded-xl border p-4 shadow-card ${variantStyles[variant]}`}
+    onClick={onClick}
+    className={`rounded-xl border p-4 shadow-card ${variantStyles[variant]} ${onClick ? 'cursor-pointer hover:ring-2 hover:ring-primary/30 transition-all' : ''}`}
   >
     <div className="flex items-start justify-between mb-3">
       <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${iconStyles[variant]}`}>
