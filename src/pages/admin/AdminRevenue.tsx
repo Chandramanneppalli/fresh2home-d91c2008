@@ -1,15 +1,22 @@
 import { useMemo, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { IndianRupee, TrendingUp, ArrowUpRight, ArrowDownRight, Loader2 } from 'lucide-react';
+import { IndianRupee, TrendingUp, Loader2, CalendarIcon } from 'lucide-react';
 import { StatCard, SectionHeader } from '@/components/StatCard';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import { useAdminStats, useOrders, formatCurrency } from '@/hooks/useAdminStats';
 import { supabase } from '@/integrations/supabase/client';
+import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 const AdminRevenue = () => {
   const stats = useAdminStats();
   const { orders, loading } = useOrders();
   const [farmerNames, setFarmerNames] = useState<Record<string, string>>({});
+  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
+  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
 
   // Fetch farmer names
   useEffect(() => {
@@ -24,14 +31,42 @@ const AdminRevenue = () => {
     });
   }, [orders]);
 
-  // Monthly revenue (last 6 months)
+  // Filter orders by date range
+  const filteredOrders = useMemo(() => {
+    return orders.filter(o => {
+      const od = new Date(o.created_at);
+      if (startDate) {
+        const s = new Date(startDate);
+        s.setHours(0, 0, 0, 0);
+        if (od < s) return false;
+      }
+      if (endDate) {
+        const e = new Date(endDate);
+        e.setHours(23, 59, 59, 999);
+        if (od > e) return false;
+      }
+      return true;
+    });
+  }, [orders, startDate, endDate]);
+
+  const hasFilter = startDate || endDate;
+
+  // Filtered stats
+  const filteredStats = useMemo(() => {
+    const totalRevenue = filteredOrders.reduce((s, o) => s + Number(o.total_amount), 0);
+    const totalCommission = filteredOrders.reduce((s, o) => s + Number(o.commission_amount), 0);
+    const avgOrderValue = filteredOrders.length ? totalRevenue / filteredOrders.length : 0;
+    return { totalRevenue, totalCommission, avgOrderValue, totalOrders: filteredOrders.length };
+  }, [filteredOrders]);
+
+  // Monthly revenue (last 6 months or within filter range)
   const monthlyRevenue = useMemo(() => {
     const now = new Date();
     const months = [];
     for (let i = 5; i >= 0; i--) {
       const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
       const end = new Date(d.getFullYear(), d.getMonth() + 1, 1);
-      const monthOrders = orders.filter(o => {
+      const monthOrders = filteredOrders.filter(o => {
         const od = new Date(o.created_at);
         return od >= d && od < end;
       });
@@ -42,7 +77,7 @@ const AdminRevenue = () => {
       });
     }
     return months;
-  }, [orders]);
+  }, [filteredOrders]);
 
   // Daily revenue (this week)
   const dailyRevenue = useMemo(() => {
@@ -58,18 +93,18 @@ const AdminRevenue = () => {
       start.setDate(monday.getDate() + i);
       const end = new Date(start);
       end.setDate(end.getDate() + 1);
-      const dayOrders = orders.filter(o => {
+      const dayOrders = filteredOrders.filter(o => {
         const od = new Date(o.created_at);
         return od >= start && od < end;
       });
       return { day, amount: dayOrders.reduce((s, o) => s + Number(o.total_amount), 0) };
     });
-  }, [orders]);
+  }, [filteredOrders]);
 
   // Top farmers by revenue
   const topFarmers = useMemo(() => {
     const farmerMap: Record<string, { revenue: number; orders: number }> = {};
-    orders.forEach(o => {
+    filteredOrders.forEach(o => {
       if (!farmerMap[o.farmer_id]) farmerMap[o.farmer_id] = { revenue: 0, orders: 0 };
       farmerMap[o.farmer_id].revenue += Number(o.total_amount);
       farmerMap[o.farmer_id].orders += 1;
@@ -83,7 +118,7 @@ const AdminRevenue = () => {
         revenue: formatCurrency(data.revenue),
         orders: data.orders,
       }));
-  }, [orders, farmerNames]);
+  }, [filteredOrders, farmerNames]);
 
   if (loading || stats.loading) {
     return (
@@ -100,19 +135,56 @@ const AdminRevenue = () => {
         <p className="text-muted-foreground mt-1">Track platform earnings and financial performance</p>
       </motion.div>
 
+      {/* Date Filter */}
+      <div className="flex flex-wrap items-center gap-3">
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" className={cn("w-[160px] justify-start text-left font-normal", !startDate && "text-muted-foreground")}>
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              {startDate ? format(startDate, "dd MMM yyyy") : "Start date"}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar mode="single" selected={startDate} onSelect={setStartDate} initialFocus className={cn("p-3 pointer-events-auto")} />
+          </PopoverContent>
+        </Popover>
+        <span className="text-muted-foreground text-sm">to</span>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" className={cn("w-[160px] justify-start text-left font-normal", !endDate && "text-muted-foreground")}>
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              {endDate ? format(endDate, "dd MMM yyyy") : "End date"}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar mode="single" selected={endDate} onSelect={setEndDate} disabled={(date) => startDate ? date < startDate : false} initialFocus className={cn("p-3 pointer-events-auto")} />
+          </PopoverContent>
+        </Popover>
+        {hasFilter && (
+          <Button variant="ghost" size="sm" onClick={() => { setStartDate(undefined); setEndDate(undefined); }}>
+            Clear
+          </Button>
+        )}
+        {hasFilter && (
+          <span className="text-xs text-muted-foreground">
+            Showing {filteredOrders.length} of {orders.length} orders
+          </span>
+        )}
+      </div>
+
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-        <StatCard icon={IndianRupee} label="Total Revenue" value={formatCurrency(stats.totalRevenue)} variant="primary" />
-        <StatCard icon={IndianRupee} label="This Month" value={formatCurrency(stats.monthRevenue)} variant="gold" />
-        <StatCard icon={TrendingUp} label="Commission" value={formatCurrency(stats.totalCommission)} variant="sky" />
-        <StatCard icon={TrendingUp} label="Avg Order" value={formatCurrency(stats.avgOrderValue)} variant="default" />
+        <StatCard icon={IndianRupee} label="Total Revenue" value={formatCurrency(hasFilter ? filteredStats.totalRevenue : stats.totalRevenue)} variant="primary" />
+        <StatCard icon={IndianRupee} label={hasFilter ? "Filtered Orders" : "This Month"} value={hasFilter ? String(filteredStats.totalOrders) : formatCurrency(stats.monthRevenue)} variant="gold" />
+        <StatCard icon={TrendingUp} label="Commission" value={formatCurrency(hasFilter ? filteredStats.totalCommission : stats.totalCommission)} variant="sky" />
+        <StatCard icon={TrendingUp} label="Avg Order" value={formatCurrency(hasFilter ? filteredStats.avgOrderValue : stats.avgOrderValue)} variant="default" />
       </div>
 
       {/* Monthly Revenue Chart */}
       <div className="rounded-xl border border-border bg-card p-4 shadow-card">
-        <SectionHeader title="Monthly Revenue & Commission" subtitle="Last 6 months" />
-        {orders.length === 0 ? (
-          <p className="text-center text-muted-foreground py-16">No order data yet</p>
+        <SectionHeader title="Monthly Revenue & Commission" subtitle={hasFilter ? "Filtered results" : "Last 6 months"} />
+        {filteredOrders.length === 0 ? (
+          <p className="text-center text-muted-foreground py-16">No order data{hasFilter ? ' for selected dates' : ' yet'}</p>
         ) : (
           <ResponsiveContainer width="100%" height={280}>
             <AreaChart data={monthlyRevenue}>
@@ -131,8 +203,8 @@ const AdminRevenue = () => {
         {/* Daily Revenue */}
         <div className="rounded-xl border border-border bg-card p-4 shadow-card">
           <SectionHeader title="This Week" subtitle="Daily revenue breakdown" />
-          {orders.length === 0 ? (
-            <p className="text-center text-muted-foreground py-16">No order data yet</p>
+          {filteredOrders.length === 0 ? (
+            <p className="text-center text-muted-foreground py-16">No order data{hasFilter ? ' for selected dates' : ' yet'}</p>
           ) : (
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={dailyRevenue}>
@@ -149,10 +221,10 @@ const AdminRevenue = () => {
         {/* Top Farmers */}
         <div className="rounded-xl border border-border bg-card shadow-card overflow-hidden">
           <div className="p-4">
-            <SectionHeader title="Top Earning Farmers" subtitle="All time" />
+            <SectionHeader title="Top Earning Farmers" subtitle={hasFilter ? "Filtered period" : "All time"} />
           </div>
           {topFarmers.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">No farmer revenue data yet</p>
+            <p className="text-center text-muted-foreground py-8">No farmer revenue data{hasFilter ? ' for selected dates' : ' yet'}</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
