@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useApp } from '@/contexts/AppContext';
 import { useLanguage, LANGUAGES, LanguageCode } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -8,11 +9,12 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
-import { User, Mail, Phone, Globe, Sun, Moon, Copy, Check } from 'lucide-react';
+import { User, Mail, Phone, Globe, Sun, Moon, Copy, Check, LogOut } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 const ProfilePage = () => {
-  const { user, userName, setUserName } = useApp();
+  const navigate = useNavigate();
+  const { user, userName, setUserName, signOut } = useApp();
   const { t, language, setLanguage } = useLanguage();
   const [profile, setProfile] = useState<any>(null);
   const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
@@ -187,6 +189,18 @@ const ProfilePage = () => {
           </div>
         </CardContent>
       </Card>
+      {/* Logout */}
+      <Button
+        variant="outline"
+        className="w-full border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
+        onClick={async () => {
+          await signOut();
+          navigate('/');
+        }}
+      >
+        <LogOut className="h-4 w-4 mr-2" />
+        {t.logout}
+      </Button>
     </div>
   );
 };
