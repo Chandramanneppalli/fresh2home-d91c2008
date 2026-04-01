@@ -22,8 +22,8 @@ serve(async (req) => {
     // NASA POWER has ~3 day lag, so fetch wider range to get enough valid data
     const end = new Date();
     end.setDate(end.getDate() - 2); // skip last 2 days (often -999)
-    const start = new Date();
-    start.setDate(end.getDate() - 9); // get ~10 days to ensure 7 valid
+    const start = new Date(end);
+    start.setDate(start.getDate() - 9); // get ~10 days to ensure 7 valid
 
     // NASA POWER parameters:
     // T2M = Temperature at 2m, T2M_MAX, T2M_MIN, RH2M = Relative Humidity,
