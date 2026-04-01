@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useApp } from '@/contexts/AppContext';
 import { useLanguage, LANGUAGES, LanguageCode } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
