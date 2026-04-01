@@ -188,6 +188,18 @@ const ProfilePage = () => {
           </div>
         </CardContent>
       </Card>
+      {/* Logout */}
+      <Button
+        variant="outline"
+        className="w-full border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
+        onClick={async () => {
+          await signOut();
+          navigate('/');
+        }}
+      >
+        <LogOut className="h-4 w-4 mr-2" />
+        {t.logout}
+      </Button>
     </div>
   );
 };
