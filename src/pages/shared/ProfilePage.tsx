@@ -13,6 +13,7 @@ import { User, Mail, Phone, Globe, Sun, Moon, Copy, Check, LogOut } from 'lucide
 import { toast } from '@/hooks/use-toast';
 
 const ProfilePage = () => {
+  const navigate = useNavigate();
   const { user, userName, setUserName, signOut } = useApp();
   const { t, language, setLanguage } = useLanguage();
   const [profile, setProfile] = useState<any>(null);
