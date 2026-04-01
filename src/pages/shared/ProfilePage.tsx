@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
-import { User, Mail, Phone, Globe, Sun, Moon, Copy, Check } from 'lucide-react';
+import { User, Mail, Phone, Globe, Sun, Moon, Copy, Check, LogOut } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 const ProfilePage = () => {
