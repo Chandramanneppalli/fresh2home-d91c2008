@@ -9,7 +9,7 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { transcript, role, language, currentPage } = await req.json();
+    const { transcript, role, language, currentPage, conversationHistory } = await req.json();
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
@@ -21,7 +21,7 @@ CURRENT CONTEXT:
 - User's preferred language: ${language}
 - Current page: ${currentPage}
 
-IMPORTANT: Always respond in the user's preferred language (${language}). If the language is "en", respond in English. If "hi", respond in Hindi. If "ta", respond in Tamil, etc.
+IMPORTANT: Always respond in the user's preferred language (${language}). If the language is "en", respond in English. If "hi", respond in Hindi. If "ta", respond in Tamil. If "te", respond in Telugu. If "kn", respond in Kannada. If "bn", respond in Bengali. If "mr", respond in Marathi. If "gu", respond in Gujarati. If "pa", respond in Punjabi. If "ml", respond in Malayalam.
 
 YOUR CAPABILITIES:
 1. **Navigation Help**: Guide users to pages. Available pages:
@@ -50,6 +50,8 @@ YOUR CAPABILITIES:
 4. **Market Insights**: Share info about prices, weather, trends
 5. **Account Setup Guidance**: Help users set up their profiles, add farm details, etc.
 
+CONVERSATION CONTEXT: You have access to previous conversation history. Use it to maintain context and provide coherent follow-up responses.
+
 RESPONSE FORMAT:
 Return a JSON object with:
 {
@@ -61,6 +63,21 @@ Keep responses SHORT and conversational — they will be spoken aloud. Max 2-3 s
 If the user asks to navigate somewhere, include the navigation action AND a brief confirmation.
 If you don't understand, ask for clarification politely.`;
 
+    // Build messages array with conversation history
+    const messages: Array<{ role: string; content: string }> = [
+      { role: "system", content: systemPrompt },
+    ];
+
+    // Add conversation history if provided
+    if (conversationHistory && Array.isArray(conversationHistory)) {
+      for (const msg of conversationHistory) {
+        messages.push({ role: msg.role, content: msg.content });
+      }
+    }
+
+    // Add current user message
+    messages.push({ role: "user", content: transcript });
+
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -69,10 +86,7 @@ If you don't understand, ask for clarification politely.`;
       },
       body: JSON.stringify({
         model: "google/gemini-3-flash-preview",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: transcript },
-        ],
+        messages,
         tools: [
           {
             type: "function",
