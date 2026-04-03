@@ -143,12 +143,15 @@ const AppShell = ({ children }: { children: ReactNode }) => {
               <button
                 key={item.path}
                 onClick={() => navigate(item.path)}
-                className={`flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg transition-colors ${
-                  active ? 'text-primary' : 'text-muted-foreground'
+                className={`relative flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg transition-all duration-200 ${
+                  active ? 'text-primary scale-105' : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
-                <item.icon className="h-5 w-5" />
-                <span className="text-[10px] font-medium">{getLabel(item.labelKey)}</span>
+                {active && (
+                  <span className="absolute -top-1 left-1/2 -translate-x-1/2 h-[3px] w-5 rounded-full bg-primary animate-scale-in" />
+                )}
+                <item.icon className={`h-5 w-5 transition-transform duration-200 ${active ? 'scale-110' : ''}`} />
+                <span className={`text-[10px] font-medium transition-all duration-200 ${active ? 'font-semibold' : ''}`}>{getLabel(item.labelKey)}</span>
               </button>
             );
           })}
