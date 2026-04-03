@@ -136,7 +136,7 @@ const AppShell = ({ children }: { children: ReactNode }) => {
         </main>
 
         {/* Mobile bottom nav */}
-        <nav className="md:hidden flex items-center justify-around border-t border-border bg-card px-2 py-2 safe-area-pb">
+        <nav className="md:hidden flex items-center justify-around border-t border-border bg-card px-2 py-2 safe-area-pb sticky bottom-0 z-50">
           {navItems.slice(0, 5).map((item) => {
             const active = location.pathname === item.path;
             return (
