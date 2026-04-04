@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Loader2 } from "lucide-react";
 import { AppProvider, useApp } from "@/contexts/AppContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import AppShell from "@/components/AppShell";
@@ -42,14 +43,22 @@ import TraceLot from "./pages/TraceLot";
 
 const queryClient = new QueryClient();
 
-// Redirect authenticated users away from auth pages
 const AuthRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, role, loading } = useApp();
-  if (loading) return null;
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   if (isAuthenticated && role) {
     const dest = role === 'farmer' ? '/farmer' : role === 'admin' ? '/admin' : '/consumer';
     return <Navigate to={dest} replace />;
   }
+
   return <>{children}</>;
 };
 
