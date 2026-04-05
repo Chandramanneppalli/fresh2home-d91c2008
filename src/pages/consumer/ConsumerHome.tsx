@@ -160,37 +160,14 @@ const ConsumerHome = () => {
         ) : (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredProducts.map((product, i) => (
-              <motion.div key={product.id} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
-                className="rounded-xl border border-border bg-card shadow-card overflow-hidden text-left group hover:shadow-elevated transition-shadow">
-                <button onClick={() => navigate(`/consumer/product/${product.id}`)} className="w-full text-left">
-                  <div className="relative h-36 overflow-hidden">
-                    <img src={freshProduce} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                    {product.organic && (
-                      <Badge className="absolute top-3 left-3 bg-farm-success/90 text-primary-foreground gap-1">
-                        <Leaf className="h-3 w-3" /> {t.organic}
-                      </Badge>
-                    )}
-                    <Badge className={`absolute top-3 right-3 ${gradeColors[product.grade] || 'bg-muted text-muted-foreground'}`}>{product.grade}</Badge>
-                  </div>
-                  <div className="p-4">
-                    <h3 className="font-semibold text-card-foreground">{product.name}</h3>
-                    <p className="text-xs text-muted-foreground mt-0.5">{product.farm_name} • {product.farm_distance}</p>
-                    <div className="flex items-center justify-between mt-2">
-                      <span className="text-lg font-bold text-card-foreground">₹{product.price}<span className="text-xs font-normal text-muted-foreground">/{product.unit}</span></span>
-                      <div className="flex items-center gap-1">
-                        <Star className="h-3.5 w-3.5 fill-farm-gold text-farm-gold" />
-                        <span className="text-sm font-medium text-card-foreground">{product.rating}</span>
-                        <span className="text-xs text-muted-foreground">({product.review_count})</span>
-                      </div>
-                    </div>
-                  </div>
-                </button>
-                <div className="px-4 pb-4">
-                  <Button size="sm" className="w-full gap-1" onClick={(e) => handleAddToCart(e, product)}>
-                    <ShoppingCart className="h-3.5 w-3.5" /> {t.addToCart}
-                  </Button>
-                </div>
-              </motion.div>
+              <ProductFlipCard
+                key={product.id}
+                product={product}
+                index={i}
+                onNavigate={(id) => navigate(`/consumer/product/${id}`)}
+                onAddToCart={handleAddToCart}
+                t={t}
+              />
             ))}
           </div>
         )}
