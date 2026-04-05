@@ -113,6 +113,28 @@ const FarmerQualityScan = () => {
         .eq('user_id', user.id)
         .single();
 
+      // Upload image to storage bucket instead of storing base64
+      let imageUrl: string | null = null;
+      if (imageBase64) {
+        const byteString = atob(imageBase64);
+        const ab = new ArrayBuffer(byteString.length);
+        const ia = new Uint8Array(ab);
+        for (let i = 0; i < byteString.length; i++) ia[i] = byteString.charCodeAt(i);
+        const blob = new Blob([ab], { type: 'image/jpeg' });
+
+        const filePath = `${user.id}/${Date.now()}-${productName.replace(/\s+/g, '-').toLowerCase()}.jpg`;
+        const { error: uploadError } = await supabase.storage
+          .from('product-images')
+          .upload(filePath, blob, { contentType: 'image/jpeg', upsert: false });
+
+        if (uploadError) throw uploadError;
+
+        const { data: urlData } = supabase.storage
+          .from('product-images')
+          .getPublicUrl(filePath);
+        imageUrl = urlData.publicUrl;
+      }
+
       const avg = Math.round(
         (metrics.freshness + metrics.color_uniformity + metrics.size_consistency + metrics.surface_quality) / 4
       );
@@ -137,7 +159,7 @@ const FarmerQualityScan = () => {
           average_score: avg,
           scanned_at: new Date().toISOString(),
         },
-        quality_scan_image: imagePreview,
+        quality_scan_image: imageUrl,
       });
 
       if (error) throw error;
