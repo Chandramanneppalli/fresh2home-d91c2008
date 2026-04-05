@@ -241,6 +241,8 @@ export type Database = {
           name: string
           organic: boolean
           price: number
+          quality_metrics: Json | null
+          quality_scan_image: string | null
           rating: number
           review_count: number
           unit: string
@@ -259,6 +261,8 @@ export type Database = {
           name: string
           organic?: boolean
           price?: number
+          quality_metrics?: Json | null
+          quality_scan_image?: string | null
           rating?: number
           review_count?: number
           unit?: string
@@ -277,6 +281,8 @@ export type Database = {
           name?: string
           organic?: boolean
           price?: number
+          quality_metrics?: Json | null
+          quality_scan_image?: string | null
           rating?: number
           review_count?: number
           unit?: string
