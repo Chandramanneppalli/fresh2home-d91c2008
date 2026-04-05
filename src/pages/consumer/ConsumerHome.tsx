@@ -9,13 +9,7 @@ import { useApp } from '@/contexts/AppContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import freshProduce from '@/assets/fresh-produce.jpg';
-
-const gradeColors: Record<string, string> = {
-  'A+': 'bg-farm-success/15 text-farm-success',
-  'A': 'bg-primary/15 text-primary',
-  'B+': 'bg-farm-warning/15 text-farm-warning',
-};
+import ProductFlipCard from '@/components/consumer/ProductFlipCard';
 
 interface Product {
   id: string;
@@ -30,6 +24,8 @@ interface Product {
   rating: number;
   review_count: number;
   farmer_id: string;
+  quality_metrics?: any;
+  quality_scan_image?: string | null;
 }
 
 const ConsumerHome = () => {
