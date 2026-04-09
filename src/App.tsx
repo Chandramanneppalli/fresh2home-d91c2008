@@ -111,6 +111,7 @@ const App = () => (
 
             {/* Traceability */}
             <Route path="/trace/:lotId" element={<TraceLot />} />
+            <Route path="/unsubscribe" element={<Unsubscribe />} />
 
             <Route path="*" element={<NotFound />} />
           </Routes>
