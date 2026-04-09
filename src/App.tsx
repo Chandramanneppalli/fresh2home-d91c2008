@@ -40,6 +40,7 @@ import AdminSettings from "./pages/admin/AdminSettings";
 import ChatPage from "./pages/shared/ChatPage";
 import ProfilePage from "./pages/shared/ProfilePage";
 import TraceLot from "./pages/TraceLot";
+import Unsubscribe from "./pages/Unsubscribe";
 
 const queryClient = new QueryClient();
 
