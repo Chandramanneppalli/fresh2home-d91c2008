@@ -84,6 +84,17 @@ const text = {
   margin: '0 0 25px',
 }
 const link = { color: 'inherit', textDecoration: 'underline' }
+const otpCode = {
+  fontSize: '32px',
+  fontWeight: 'bold' as const,
+  letterSpacing: '6px',
+  color: 'hsl(142, 52%, 36%)',
+  textAlign: 'center' as const,
+  padding: '16px 0',
+  margin: '0 0 25px',
+  backgroundColor: 'hsl(142, 52%, 96%)',
+  borderRadius: '0.75rem',
+}
 const button = {
   backgroundColor: 'hsl(142, 52%, 36%)',
   color: 'hsl(40, 33%, 98%)',
