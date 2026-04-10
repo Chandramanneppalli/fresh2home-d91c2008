@@ -30,8 +30,8 @@ const VerifyOtp = () => {
   }, [isAuthenticated, role, navigate]);
 
   const handleVerify = async () => {
-    if (otp.length !== 6) {
-      toast({ title: 'Enter OTP', description: 'Please enter the 6-digit code sent to your email.', variant: 'destructive' });
+    if (otp.length !== 8) {
+      toast({ title: 'Enter OTP', description: 'Please enter the 8-digit code sent to your email.', variant: 'destructive' });
       return;
     }
     setIsLoading(true);
@@ -112,7 +112,7 @@ const VerifyOtp = () => {
         <div className="rounded-lg border border-border bg-muted/50 p-4 mb-6">
           <p className="text-sm font-medium text-foreground mb-1">📧 Check your inbox</p>
           <p className="text-sm text-muted-foreground">
-            Click the <strong>verification link</strong> in the email, or enter the 6-digit code below.
+            Click the <strong>verification link</strong> in the email, or enter the 8-digit code below.
           </p>
           <p className="text-xs text-muted-foreground mt-2">
             💡 Don't see it? Check your <strong>spam/junk</strong> folder.
@@ -122,7 +122,7 @@ const VerifyOtp = () => {
         <p className="text-sm font-medium text-foreground mb-3">Or enter the verification code:</p>
 
         <div className="flex justify-center mb-6">
-          <InputOTP maxLength={6} value={otp} onChange={setOtp}>
+          <InputOTP maxLength={8} value={otp} onChange={setOtp}>
             <InputOTPGroup>
               <InputOTPSlot index={0} />
               <InputOTPSlot index={1} />
@@ -130,11 +130,13 @@ const VerifyOtp = () => {
               <InputOTPSlot index={3} />
               <InputOTPSlot index={4} />
               <InputOTPSlot index={5} />
+              <InputOTPSlot index={6} />
+              <InputOTPSlot index={7} />
             </InputOTPGroup>
           </InputOTP>
         </div>
 
-        <Button onClick={handleVerify} size="lg" className="w-full h-12 font-semibold" disabled={isLoading || otp.length !== 6}>
+        <Button onClick={handleVerify} size="lg" className="w-full h-12 font-semibold" disabled={isLoading || otp.length !== 8}>
           {isLoading ? <><Loader2 className="h-4 w-4 animate-spin mr-2" /> Verifying...</> : 'Verify with Code'}
         </Button>
 
