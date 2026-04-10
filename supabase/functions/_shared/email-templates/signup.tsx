@@ -19,6 +19,7 @@ interface SignupEmailProps {
   siteUrl: string
   recipient: string
   confirmationUrl: string
+  token?: string
 }
 
 export const SignupEmail = ({
@@ -26,6 +27,7 @@ export const SignupEmail = ({
   siteUrl,
   recipient,
   confirmationUrl,
+  token,
 }: SignupEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head />
@@ -45,8 +47,15 @@ export const SignupEmail = ({
           <Link href={`mailto:${recipient}`} style={link}>
             {recipient}
           </Link>
-          ) to get started:
+          ) to get started.
         </Text>
+        {token && (
+          <>
+            <Text style={text}>Your verification code:</Text>
+            <Text style={otpCode}>{token}</Text>
+          </>
+        )}
+        <Text style={text}>Or click the button below:</Text>
         <Button style={button} href={confirmationUrl}>
           Get Started
         </Button>
