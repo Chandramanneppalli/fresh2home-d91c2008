@@ -59,12 +59,14 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         if (roles && roles.length > 0) {
           setRole(roles[0].role as UserRole);
         } else {
-          setRole((meta?.role as UserRole) || 'consumer');
+          // Never trust user_metadata for role — default to consumer
+          setRole('consumer');
         }
       } catch (error) {
         console.error('Error fetching role:', error);
         if (mounted) {
-          setRole((meta?.role as UserRole) || 'consumer');
+          // Never trust user_metadata for role — default to consumer
+          setRole('consumer');
         }
       } finally {
         if (mounted) {
