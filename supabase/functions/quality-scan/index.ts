@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -9,6 +10,17 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
+    // Auth check
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, { global: { headers: { Authorization: authHeader } } });
+    const { data, error } = await supabase.auth.getClaims(authHeader.replace("Bearer ", ""));
+    if (error || !data?.claims) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
     const { imageBase64, productName, category } = await req.json();
 
     if (!imageBase64) {
@@ -38,10 +50,7 @@ If the image is NOT of produce/crops/food items, set all scores to 0 and grade t
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
+      headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
         messages: [
@@ -69,11 +78,7 @@ If the image is NOT of produce/crops/food items, set all scores to 0 and grade t
                   surface_quality: { type: "number", description: "Surface quality score 0-100" },
                   overall_grade: { type: "string", enum: ["A+", "A", "B+", "Reject"] },
                   summary: { type: "string", description: "Brief quality summary in 1-2 sentences" },
-                  recommendations: {
-                    type: "array",
-                    items: { type: "string" },
-                    description: "List of improvement recommendations if any",
-                  },
+                  recommendations: { type: "array", items: { type: "string" }, description: "List of improvement recommendations if any" },
                 },
                 required: ["freshness", "color_uniformity", "size_consistency", "surface_quality", "overall_grade", "summary"],
                 additionalProperties: false,
@@ -101,12 +106,10 @@ If the image is NOT of produce/crops/food items, set all scores to 0 and grade t
       throw new Error("AI analysis failed");
     }
 
-    const data = await response.json();
-    const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
+    const aiData = await response.json();
+    const toolCall = aiData.choices?.[0]?.message?.tool_calls?.[0];
 
-    if (!toolCall?.function?.arguments) {
-      throw new Error("AI did not return quality assessment");
-    }
+    if (!toolCall?.function?.arguments) throw new Error("AI did not return quality assessment");
 
     const metrics = JSON.parse(toolCall.function.arguments);
 
