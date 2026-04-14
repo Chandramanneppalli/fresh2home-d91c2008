@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Sprout, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import heroImage from '@/assets/hero-farm.jpg';
+import heroImage from '@/assets/hero-farm.webp';
 
 const Welcome = () => {
   const navigate = useNavigate();
