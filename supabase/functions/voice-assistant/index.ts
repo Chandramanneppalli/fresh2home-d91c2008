@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -9,6 +10,17 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
+    // Auth check
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, { global: { headers: { Authorization: authHeader } } });
+    const { data, error } = await supabase.auth.getClaims(authHeader.replace("Bearer ", ""));
+    if (error || !data?.claims) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
     const { transcript, role, language, currentPage, conversationHistory } = await req.json();
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
@@ -63,27 +75,21 @@ Keep responses SHORT and conversational — they will be spoken aloud. Max 2-3 s
 If the user asks to navigate somewhere, include the navigation action AND a brief confirmation.
 If you don't understand, ask for clarification politely.`;
 
-    // Build messages array with conversation history
     const messages: Array<{ role: string; content: string }> = [
       { role: "system", content: systemPrompt },
     ];
 
-    // Add conversation history if provided
     if (conversationHistory && Array.isArray(conversationHistory)) {
       for (const msg of conversationHistory) {
         messages.push({ role: msg.role, content: msg.content });
       }
     }
 
-    // Add current user message
     messages.push({ role: "user", content: transcript });
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
+      headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({
         model: "google/gemini-3-flash-preview",
         messages,
@@ -133,11 +139,11 @@ If you don't understand, ask for clarification politely.`;
       throw new Error(`AI error: ${status}`);
     }
 
-    const data = await response.json();
-    const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
-    
+    const aiData = await response.json();
+    const toolCall = aiData.choices?.[0]?.message?.tool_calls?.[0];
+
     let result = { reply: "I'm sorry, I didn't understand that. Could you repeat?", action: null };
-    
+
     if (toolCall?.function?.arguments) {
       try {
         result = JSON.parse(toolCall.function.arguments);
