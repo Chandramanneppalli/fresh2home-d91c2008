@@ -40,7 +40,7 @@ const Welcome = () => {
           transition={{ duration: 0.7, delay: 0.3 }}
           className="text-center max-w-lg"
         >
-          <h2 className="text-4xl md:text-5xl font-bold font-display leading-tight text-primary-foreground mb-4">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold font-display leading-tight text-primary-foreground mb-3 sm:mb-4">
             Farm to Table,{' '}
             <span className="text-farm-gold">Reimagined</span>
           </h2>
