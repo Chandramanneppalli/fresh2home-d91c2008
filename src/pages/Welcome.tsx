@@ -16,13 +16,13 @@ const Welcome = () => {
       </div>
 
       {/* Content */}
-      <div className="relative z-10 flex min-h-screen flex-col items-center justify-between px-6 py-12">
+      <div className="relative z-10 flex min-h-[100dvh] flex-col items-center justify-between px-6 py-8 sm:py-12">
         {/* Logo */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="flex items-center gap-3 pt-8"
+          className="flex items-center gap-3 pt-4 sm:pt-8"
         >
           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary">
             <Sprout className="h-7 w-7 text-primary-foreground" />
