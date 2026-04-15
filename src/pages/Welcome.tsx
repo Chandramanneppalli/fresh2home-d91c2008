@@ -8,7 +8,7 @@ const Welcome = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="relative min-h-screen overflow-hidden">
+    <div className="relative min-h-[100dvh] overflow-hidden">
       {/* Background */}
       <div className="absolute inset-0">
         <img src={heroImage} alt="Lush farmland at golden hour" className="h-full w-full object-cover" />
