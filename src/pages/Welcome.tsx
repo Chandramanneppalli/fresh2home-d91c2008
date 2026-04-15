@@ -8,7 +8,7 @@ const Welcome = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="relative min-h-[100dvh] overflow-hidden">
+    <div className="relative h-screen overflow-hidden" style={{ height: '100dvh' }}>
       {/* Background */}
       <div className="absolute inset-0">
         <img src={heroImage} alt="Lush farmland at golden hour" className="h-full w-full object-cover" />
@@ -16,7 +16,7 @@ const Welcome = () => {
       </div>
 
       {/* Content */}
-      <div className="relative z-10 flex min-h-[100dvh] flex-col items-center justify-between px-6 py-8 sm:py-12">
+      <div className="relative z-10 flex h-full flex-col items-center justify-between px-6 py-6 sm:py-12 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
         {/* Logo */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
