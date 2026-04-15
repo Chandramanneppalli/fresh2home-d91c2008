@@ -55,7 +55,7 @@ const Welcome = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.6 }}
-          className="w-full max-w-sm space-y-3 pb-4 sm:pb-8"
+          className="w-full max-w-sm space-y-2 sm:space-y-3"
         >
           <Button
             onClick={() => navigate('/role-select')}
