@@ -2,13 +2,21 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Sprout, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useEffect, useState } from 'react';
 import heroImage from '@/assets/hero-farm.webp';
 
 const Welcome = () => {
   const navigate = useNavigate();
+  const [vh, setVh] = useState(window.innerHeight);
+
+  useEffect(() => {
+    const update = () => setVh(window.innerHeight);
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, []);
 
   return (
-    <div className="relative h-screen overflow-hidden" style={{ height: '100dvh' }}>
+    <div className="relative overflow-hidden" style={{ height: vh }}>
       {/* Background */}
       <div className="absolute inset-0">
         <img src={heroImage} alt="Lush farmland at golden hour" className="h-full w-full object-cover" />
@@ -16,13 +24,13 @@ const Welcome = () => {
       </div>
 
       {/* Content */}
-      <div className="relative z-10 flex h-full flex-col items-center justify-between px-6 py-6 sm:py-12 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+      <div className="relative z-10 flex h-full flex-col items-center justify-between px-6 py-6 sm:py-12">
         {/* Logo */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="flex items-center gap-3 pt-4 sm:pt-8"
+          className="flex items-center gap-3"
         >
           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary">
             <Sprout className="h-7 w-7 text-primary-foreground" />
