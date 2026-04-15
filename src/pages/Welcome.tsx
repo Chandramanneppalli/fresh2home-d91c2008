@@ -44,7 +44,7 @@ const Welcome = () => {
             Farm to Table,{' '}
             <span className="text-farm-gold">Reimagined</span>
           </h2>
-          <p className="text-primary-foreground/80 text-lg leading-relaxed">
+          <p className="text-primary-foreground/80 text-base sm:text-lg leading-relaxed">
             AI-powered marketplace connecting farmers directly with consumers. 
             Fair prices, full transparency, zero middlemen.
           </p>
