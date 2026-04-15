@@ -60,7 +60,7 @@ const Welcome = () => {
           <Button
             onClick={() => navigate('/role-select')}
             size="lg"
-            className="w-full h-14 text-lg font-semibold bg-primary hover:bg-primary/90 shadow-elevated gap-2"
+            className="w-full h-12 sm:h-14 text-base sm:text-lg font-semibold bg-primary hover:bg-primary/90 shadow-elevated gap-2"
           >
             Get Started
             <ArrowRight className="h-5 w-5" />
@@ -69,7 +69,7 @@ const Welcome = () => {
             onClick={() => navigate('/login')}
             variant="outline"
             size="lg"
-            className="w-full h-14 text-lg font-semibold border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground"
+            className="w-full h-12 sm:h-14 text-base sm:text-lg font-semibold border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground"
           >
             I already have an account
           </Button>
